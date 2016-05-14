@@ -1,0 +1,10 @@
+*.gz
+*.xz
+*.zip
+*.o
+*.so
+*.dll
+*.exe
+*.pyc
+*.pyo
+*.moc
