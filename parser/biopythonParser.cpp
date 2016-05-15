@@ -8,7 +8,7 @@
  *                     "SeqIO.parse('filename.extnsn', 'filetype'");
 */
 
-int getFileData(int argc, char *argv[])
+PyObject* getFileData(int argc, char *argv[])
 {
     PyObject *BioModule = PyImport_ImportModule("Bio");
     const char *filename, *filetype;
@@ -26,10 +26,12 @@ int getFileData(int argc, char *argv[])
     
     Py_SetProgramName(program);  /* optional but recommended */
     Py_Initialize();
-    PyRun_SimpleString(cmdToRun);
+    PyObject* filedata;
+    filedata = PyRun_String(cmdToRun, 0, NULL, NULL);
     Py_DECREF(filename);
     Py_DECREF(filetype);
     Py_Finalize();
     PyMem_RawFree(program);
-    return 0;
+
+    return filedata;
 }
