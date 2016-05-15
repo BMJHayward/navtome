@@ -13,6 +13,7 @@
     "fastq-solexa": "fastq-solexa", 
     "fasta": "fasta", 
     "fna": "fasta", 
+    "fq": "fasta", 
     "fastq": "fastq", 
     "fastq-sanger": "fastq-sanger", 
     "gb": "genbank", 
