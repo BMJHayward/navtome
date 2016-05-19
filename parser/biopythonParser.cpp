@@ -11,12 +11,12 @@
 PyObject* getFileData(int argc, char *argv[])
 {
     PyObject *BioModule = PyImport_ImportModule("Bio");
-    const char *filename, *filetype;
-    filename = PyUnicode_DecodeFSDefault(argv[1]);
-    filetype = PyUnicode_DecodeFSDefault(argv[2]);
+    const char *filename, *filetype, *pycmdToRun;
+    filename = (const char *)PyUnicode_DecodeFSDefault(argv[1]);
+    filetype = (const char *)PyUnicode_DecodeFSDefault(argv[2]);
     std::string cmdToRun = "import Bio\nBio.SeqIO.parse(";
     cmdToRun = cmdToRun + filename + std::string(",") + filetype;
-    cmdToRun = (const char*)cmdToRun;
+    pycmdToRun = cmdToRun.c_str();
 
     wchar_t *program = Py_DecodeLocale(argv[0], NULL);
     if (program == NULL) {
@@ -27,7 +27,7 @@ PyObject* getFileData(int argc, char *argv[])
     Py_SetProgramName(program);  /* optional but recommended */
     Py_Initialize();
     PyObject* filedata;
-    filedata = PyRun_String(cmdToRun, 0, NULL, NULL);
+    filedata = PyRun_String(pycmdToRun, 0, NULL, NULL);
     Py_DECREF(filename);
     Py_DECREF(filetype);
     Py_Finalize();
