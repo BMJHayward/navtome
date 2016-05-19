@@ -20,6 +20,18 @@ class NucPepXform
      };
 
 
-    std::string intToStr(){};
+    std::string intToStr(int inInt, std::string outBase, int maxDigits)
+    {
+        int remainder = inInt;
+        std::string retStr = "";
+
+        for (int i = maxDigits; i >= 0; --i)
+        {
+            retStr += outBase.at(trunc(remainder / (int)pow(outBase.length(), i)));
+            remainder = trunc(remainder % (int)pow(outBase.length(), i));
+        }
+
+        return retStr;
+    };
 };
 
