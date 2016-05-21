@@ -1,5 +1,8 @@
-#include <string>
 #include <cmath>
+#include <exception>
+#include <iostream>
+#include <string>
+#include <boost/algorithm/string.hpp>
 
 class NucPepXform
 {
@@ -32,6 +35,25 @@ class NucPepXform
         }
 
         return retStr;
+    };
+
+
+    std::string verify(std::string inStr, std::string strBase)
+    {
+        boost::to_upper(inStr);
+        std::string outStr = "";
+
+        for (auto i: inStr)
+        {
+            if (strBase.find(inStr.at(i)) >=0)
+            { 
+                outStr += inStr.at(i);
+            } else {
+                std::cout << inStr.at(i) << ": invalid character, removing from value." << std::endl;
+            };
+        };
+
+        return outStr;
     };
 };
 
