@@ -14,7 +14,7 @@ class NucPepXform
     int strToInt(std::string inStr, std::string inBase)
     {
         int retNum = 0;
-        for (auto i:inStr)
+        for (auto i: inStr)
         {
             retNum += pow(inBase.length(), inStr.length()-i-1) * (inBase.at(inStr.at(i)));
         }
@@ -54,6 +54,20 @@ class NucPepXform
         };
 
         return outStr;
+    };
+
+
+    std::string transcribe(std::string DNAseq)
+    {
+        std::string DNAstr = verify(DNAseq, baseDNA);
+        std::string RNAstr = "";
+
+        for (auto i: DNAstr)
+        {
+            RNAstr += intToStr(strToInt(&DNAstr.at(i), baseDNA), baseRNA, 0);
+        };
+
+        return RNAstr;
     };
 };
 
