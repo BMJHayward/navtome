@@ -69,5 +69,36 @@ class NucPepXform
 
         return RNAstr;
     };
+
+
+    std::string revTranscribe(std::string RNAseq)
+    {
+        std::string RNAstr = verify(RNAseq, baseRNA);
+        std::string DNAstr = "";
+
+        for (auto i: RNAstr)
+        {
+            DNAstr += intToStr(strToInt(&RNAstr.at(i), baseRNA), baseDNA, 0);
+        };
+
+        return DNAstr;
+    };
+
+
+    std::string translate(std::string RNAseq)
+    {
+        std::string RNAstr = verify(RNAseq, baseRNA);
+        std::string peptide = "";
+        std::string codon = "123";
+
+        for (int i=0; i<(int)RNAseq.length(); ++i)
+        {
+            codon = RNAstr.substr(i, i+codon.length());
+            peptide += intToStr(strToInt(codon, baseRNA), basePEP, 0);
+
+        };
+
+        return peptide;
+    };
 };
 
