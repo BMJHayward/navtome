@@ -1,10 +1,88 @@
-*.gz
-*.xz
-*.zip
-*.o
-*.so
+# Compiled source #
+###################
+*.a
+*.com
+*.class
 *.dll
 *.exe
+*.o
+*.so
 *.pyc
 *.pyo
-*.moc
+ 
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+ 
+# Logs and databases #
+######################
+*.log
+*.db
+*.pdb
+*.dump
+ 
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+
+# Video and large files #
+#########################
+
+*.avi
+*.mpeg
+*.mp4
+*.ogg
+*.mpeg4
+*.mkv
+
+# Audio #
+#########
+
+*.mp3
+*.wav
+*.acc
+
+# Image files #
+###############
+
+# Directories #
+###############
+
+bin/
+data/
+dumpdir/
+log/
+media/
+scrap/
+src/
+static/
+tmp/
+__pycache__/
+
+
+# User files #
+##############
+*.bak
+*.BAK
+*.pkl
+*.PKL
+*.pickle
+*.PICKLE
+*.txt
