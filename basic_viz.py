@@ -1,3 +1,5 @@
+import argparse
+import os
 from Bio import SeqIO, SeqRecord, Seq
 from collections import Counter, defaultdict
 from dna_features_viewer import BiopythonTranslator, CircularGraphicRecord, GraphicFeature, GraphicRecord
@@ -16,14 +18,13 @@ def demo_dna_features_viewer():
   ]
   record = GraphicRecord(sequence_length=1000, features=features)
   record.plot(figure_width=5)
+  plt.show()
 
-  record = CircularGraphicRecord(sequence_length=1000, features=features)
-  record.plot_with_bokeh(figure_width=5)
-
+  # circle_record = CircularGraphicRecord(sequence_length=1000, features=features)
+  # circle_record.plot_with_bokeh(figure_width=5)
   # seq_record = SeqIO.read('data/Lactobacillus_reuteri/GCA_000016825.1_Lactobacillus_reuteri_DSM_20016_Complete_Genome.fasta', 'fasta')
   # graphic_record = BiopythonTranslator().translate_record(seq_record)
-  ax, _ = graphic_record.plot(figure_width=10)
-
+  # ax, _ = graphic_record.plot(figure_width=10)
 
 def ngrams(sequence, n):
     sequence = list(sequence)
@@ -32,13 +33,15 @@ def ngrams(sequence, n):
 
 def nucleotide_distribution(sequence):
   if type(sequence)==SeqRecord.SeqRecord:
-    trigrams = [''.join([t for t in tup]) for tup in ngrams(sequence.seq.tostring(),3)]
+    trigrams = [''.join([t for t in tup]) for tup in ngrams(str(sequence.seq),3)]
   elif type(sequence)==Seq.Seq:
-    trigrams = [''.join([t for t in tup]) for tup in ngrams(sequence.tostring(),3)]
+    trigrams = [''.join([t for t in tup]) for tup in ngrams(str(sequence),3)]
   elif type(sequence)==str:
     trigrams = [''.join([t for t in tup]) for tup in ngrams(sequence,3)]
   else:
-    raise TypeError('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'.format(type(sequence)))
+    raise TypeError(
+        ('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'
+        .format(type(sequence))))
   plt.hist(trigrams)
   plt.show()
 
@@ -67,3 +70,52 @@ def plot_ABI(abifilename):
   plt.plot(trace['DATA11'], color='green')
   plt.plot(trace['DATA12'], color='yellow')
   plt.show()
+
+def main(args):
+    if args.filename:
+        ext = {'gbk':'genbank','fasta':'fasta'}
+        filetype = ext[args.filename.name.split('.')[-1]]
+        sequence = SeqIO.read(args.filename, filetype)
+        if args.abi_trace:
+            plot_ABI(sequence)
+        if args.nucleotide_distribution:
+            nucleotide_distribution(sequence)
+        if args.peptide_distribution:
+            peptide_distribution(sequence)
+    elif args.demonstrate:
+        demo_dna_features_viewer()
+    else:
+        print(args)
+       
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='Basic genomic visualisation and stats',
+        epilog='''Plots an abi trace, or distributions of codons
+                  or amino acids.
+               '''
+    )
+    parser.add_argument('-demo', '--demonstrate',
+                        help='will demonstrate graphic record of a small plasmid',
+                        default=False,)
+    parser.add_argument('-abi', '--abi-trace',
+                        help='plot an abi trace',
+                        default=False, action='store_true')
+    parser.add_argument('-nuc', '--nucleotide_distribution',
+                        help='''plot a naive distribution of codons. I.e.
+                                does not heed start/stop codons, ORFs etc''',
+                        default=False, action='store_true')
+    parser.add_argument('-pep', '--peptide_distribution',
+                        help='''Plots distribution of amino acids in a peptide chain.
+                                If given a nucleotide sequence, will perform translation if RNA, and 
+                                transcription+translation if DNA''',
+                        default=False, action='store_true')
+    parser.add_argument('-f', '--filename',
+                        help='''File name for processing. Only genbank and fasta files are
+                        currently supported. If no filename, then only the 'demo' option
+                        will work.''',
+                        default=None,
+                        nargs='?',
+                        type=argparse.FileType('r'))
+    args = parser.parse_args()
+    main(args)
