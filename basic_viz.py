@@ -4,6 +4,7 @@ from Bio import SeqIO, SeqRecord, Seq
 from collections import Counter, defaultdict
 from dna_features_viewer import BiopythonTranslator, CircularGraphicRecord, GraphicFeature, GraphicRecord
 from matplotlib import pyplot as plt
+plt.style.use('ggplot')
 
 def demo_dna_features_viewer():
     features=[
@@ -43,23 +44,30 @@ def make_trigrams(sequence):
           ('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'
           .format(type(sequence))))
 
-def nucleotide_distribution(sequence, normed=False):
-     if normed:
-       plt.hist(make_trigrams(sequence), normed=normed)
+def nucleotide_distribution(sequence, **kwargs):
+     if kwargs['normed']:
+       plt.hist(make_trigrams(sequence), normed=True)
      else:
        plt.hist(make_trigrams(sequence))
+     plt.xticks(rotation=90)
      plt.show()
 
-def peptide_distribution(sequence):
+def get_peptide_toplot(sequence):
     peptide_alphabet = 'ACDEFGHIKLMNPQRSTVWYBXZJUO*'
     if (type(sequence)==Seq.Seq and sequence.alphabet.letters==peptide_alphabet):
-      plt.hist(sequence)
+      return sequence
     elif type(sequence)==SeqRecord.SeqRecord:
-      plt.hist(sequence.seq.transcribe().translate())
+      return sequence.seq.transcribe().translate()
     elif type(sequence)==Seq.Seq:
-      plt.hist(sequence.transcribe().translate())
+      return sequence.transcribe().translate()
     else:
       raise TypeError('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'.format(type(sequence)))
+
+def peptide_distribution(sequence, **kwargs):
+    if kwargs['normed']:
+        plt.hist(get_peptide_toplot(sequence), normed=True)
+    else:
+        plt.hist(get_peptide_toplot(sequence))
     plt.show()
 
 def plot_ABI(abifilename):
@@ -86,7 +94,7 @@ def main(args):
         if args.nucleotide_distribution:
             nucleotide_distribution(sequence, normed=args.normed)
         if args.peptide_distribution:
-            peptide_distribution(sequence)
+            peptide_distribution(sequence, normed=args.normed)
     elif args.demonstrate:
         demo_dna_features_viewer()
     else:
@@ -102,7 +110,7 @@ if __name__ == '__main__':
     )
     parser.add_argument('-demo', '--demonstrate',
         help='will demonstrate graphic record of a small plasmid',
-        default=False,)
+        default=False, action='store_true')
     parser.add_argument('-abi', '--abi-trace',
         help='plot an abi trace',
         default=False, action='store_true')
@@ -122,8 +130,8 @@ if __name__ == '__main__':
         default=None,
         nargs='?',
         type=argparse.FileType('r'))
-    parser.add_argument('-perc', '--percentage',
-        help='''plot distribution as percentages instead of count'''
-        default=False, action='store_true', dest=normed)
+    parser.add_argument('-normed', '--normed',
+        help='''plot distribution in normalised form''',
+        default=False, action='store_true', dest='normed')
     args = parser.parse_args()
     main(args)
