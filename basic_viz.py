@@ -6,6 +6,26 @@ from dna_features_viewer import BiopythonTranslator, CircularGraphicRecord, Grap
 from matplotlib import pyplot as plt
 plt.style.use('ggplot')
 
+def naive_backtranslate(seq_object):
+    '''
+    select ambiguous|unambiguous
+    select DNA|RNA
+    select codon table from list
+    parse given seq_object argument into peptide string
+    back translate each amino acid to its potential codons
+    eg:
+    >>> from Bio.Data import CodonTable
+    >>> cerp = CodonTable.ambiguous_dna_by_name['Mycoplasma'].forward_table
+    >>> newcerp = dict()
+    >>> for cod, ami in cerp.items():
+    >>>     if ami not in newcerp.keys():
+    >>>         newcerp[ami] = [cod]
+    >>>     else:
+    >>>         newcerp[ami].append(cod)
+    >>> print(newcerp)
+    '''
+    pass
+
 def demo_dna_features_viewer():
     features=[
         GraphicFeature(start=0, end=20, strand=+1, color="#ffd700",
