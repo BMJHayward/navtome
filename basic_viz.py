@@ -14,6 +14,8 @@ def naive_backtranslate(seq_object, codontable, speciestable):
     select codon table from list
     parse given seq_object argument into peptide string
     back translate each amino acid to its potential codons
+      i.e. reverse the codon table, keeping codons in a list
+      if there is more than one for any given amino acid
     eg:
     >>> table = table_choices[codontable]
     >>> species = species_choices[speciestable]
@@ -48,7 +50,15 @@ def naive_backtranslate(seq_object, codontable, speciestable):
     ]
     table = table_choices[codontable]
     species = species_choices[speciestable]
-
+    target_codon_table = CodonTable.__dict__[table][species].forward_table
+    back_table = dict()
+    for codon, amino in target_codon_table.items():
+        if amino not in back_table.keys():
+            back_table[amino] = [codon]
+        else:
+            back_table[amino].append(codon)
+    new_seq_object = [back_table[amino] for amino in seq_object]
+    return new_seq_object
 
 def demo_dna_features_viewer():
     features=[
