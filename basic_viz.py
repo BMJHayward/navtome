@@ -1,12 +1,13 @@
 import argparse
 import os
 from Bio import SeqIO, SeqRecord, Seq
+from Bio.Data import CodonTable
 from collections import Counter, defaultdict
 from dna_features_viewer import BiopythonTranslator, CircularGraphicRecord, GraphicFeature, GraphicRecord
 from matplotlib import pyplot as plt
 plt.style.use('ggplot')
 
-def naive_backtranslate(seq_object):
+def naive_backtranslate(seq_object, codontable, speciestable):
     '''
     select ambiguous|unambiguous
     select DNA|RNA
@@ -14,8 +15,9 @@ def naive_backtranslate(seq_object):
     parse given seq_object argument into peptide string
     back translate each amino acid to its potential codons
     eg:
-    >>> from Bio.Data import CodonTable
-    >>> cerp = CodonTable.ambiguous_dna_by_name['Mycoplasma'].forward_table
+    >>> table = table_choices[codontable]
+    >>> species = species_choices[speciestable]
+    >>> cerp = CodonTable.__dict__[table][species].forward_table
     >>> newcerp = dict()
     >>> for cod, ami in cerp.items():
     >>>     if ami not in newcerp.keys():
@@ -23,8 +25,30 @@ def naive_backtranslate(seq_object):
     >>>     else:
     >>>         newcerp[ami].append(cod)
     >>> print(newcerp)
+    >>> new_seq_object = [newcerp[ami] for ami in seq_object]
+    >>> new_seq_lengths = [len(codons) for codons in new_seq_object]
+    >>> total_permutations = reduce(lambda x,y:x*y, new_seq_lengths)
+    >>> print(total_permutations)
+    >>> print('there are: ', len(str(total_permutations)), ' digits in the number of total permutations')
     '''
-    pass
+    table_choices = [
+        'ambiguous_dna_by_name', 'ambiguous_generic_by_name', 'ambiguous_rna_by_name',
+        'generic_by_name', 'standard_dna_table', 'standard_rna_table',
+        'unambiguous_dna_by_name', 'unambiguous_rna_by_name'
+    ]
+    species_choices = [
+        'Alternative Flatworm Mitochondrial', 'Alternative Yeast Nuclear', 'Archaeal', 'Ascidian Mitochondrial',
+        'Bacterial', 'Blepharisma Macronuclear', 'Candidate Division SR1', 'Chlorophycean Mitochondrial', 'Ciliate Nuclear',
+        'Coelenterate Mitochondrial', 'Dasycladacean Nuclear', 'Echinoderm Mitochondrial', 'Euplotid Nuclear',
+        'Flatworm Mitochondrial', 'Gracilibacteria', 'Hexamita Nuclear', 'Invertebrate Mitochondrial',
+        'Mold Mitochondrial', 'Mycoplasma', 'Pachysolen tannophilus Nuclear Code', 'Plant Plastid',
+        'Protozoan Mitochondrial', 'Pterobranchia Mitochondrial', 'SGC0', 'SGC1', 'SGC2', 'SGC3',
+        'SGC4', 'SGC5', 'SGC8', 'SGC9', 'Scenedesmus obliquus Mitochondrial', 'Spiroplasma', 'Standard',
+        'Thraustochytrium Mitochondrial', 'Trematode Mitochondrial', 'Vertebrate Mitochondrial', 'Yeast Mitochondrial'
+    ]
+    table = table_choices[codontable]
+    species = species_choices[speciestable]
+
 
 def demo_dna_features_viewer():
     features=[
