@@ -3,6 +3,7 @@ import os
 from Bio import SeqIO, SeqRecord, Seq
 from Bio.Data import CodonTable
 from collections import Counter, defaultdict
+from itertools import product
 from dna_features_viewer import BiopythonTranslator, CircularGraphicRecord, GraphicFeature, GraphicRecord
 from matplotlib import pyplot as plt
 plt.style.use('ggplot')
@@ -59,6 +60,24 @@ def naive_backtranslate(seq_object, codontable, speciestable):
             back_table[amino].append(codon)
     new_seq_object = [back_table[amino] for amino in seq_object]
     return new_seq_object
+
+def get_peptide_index(nuc_sequence, prot_sequence, codon_count):
+    '''
+    1. use naive_backtrace to get list of codons for each amino
+    2. calculate Cartesian product of potential input codons
+      - this creates potential nucleotide sequences to check for
+    3. get index of each potential sequence in nuc_sequence
+    '''
+    potential_codons = naive_backtranslate(prot_sequence)[:codon_count]
+    search_nucs = list(product(*potential_codons))
+    for seq in search_nucs:
+        seq_string = ''.join(seq)
+        try:
+	    print(nuc_sequence.index(seq_string))
+            # to print all indices, but only works if looking for a single nucleotide:
+            # [index for index, value in enumerate(nuc_sequence) if value == seq_string]
+        except ValueError:
+            continue
 
 def demo_dna_features_viewer():
     features=[
