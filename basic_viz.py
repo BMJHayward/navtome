@@ -73,7 +73,7 @@ def get_peptide_index(nuc_sequence, prot_sequence, codon_count):
     for seq in search_nucs:
         seq_string = ''.join(seq)
         try:
-	    print(nuc_sequence.index(seq_string))
+            print(nuc_sequence.index(seq_string))
             # to print all indices, but only works if looking for a single nucleotide:
             # [index for index, value in enumerate(nuc_sequence) if value == seq_string]
         except ValueError:
@@ -118,23 +118,23 @@ def make_trigrams(sequence):
           .format(type(sequence))))
 
 def nucleotide_distribution(sequence, **kwargs):
-     if kwargs['normed']:
-       plt.hist(make_trigrams(sequence), normed=True)
-     else:
-       plt.hist(make_trigrams(sequence))
-     plt.xticks(rotation=90)
-     plt.show()
+    if kwargs['normed']:
+        plt.hist(make_trigrams(sequence), normed=True)
+    else:
+        plt.hist(make_trigrams(sequence))
+    plt.xticks(rotation=90)
+    plt.show()
 
 def get_peptide_toplot(sequence):
     peptide_alphabet = 'ACDEFGHIKLMNPQRSTVWYBXZJUO*'
     if (type(sequence)==Seq.Seq and sequence.alphabet.letters==peptide_alphabet):
-      return sequence
+        return sequence
     elif type(sequence)==SeqRecord.SeqRecord:
-      return sequence.seq.transcribe().translate()
+        return sequence.seq.transcribe().translate()
     elif type(sequence)==Seq.Seq:
-      return sequence.transcribe().translate()
+        return sequence.transcribe().translate()
     else:
-      raise TypeError('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'.format(type(sequence)))
+        raise TypeError('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'.format(type(sequence)))
 
 def peptide_distribution(sequence, **kwargs):
     if kwargs['normed']:
