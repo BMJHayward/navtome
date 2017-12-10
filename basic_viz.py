@@ -8,11 +8,53 @@ from dna_features_viewer import BiopythonTranslator, CircularGraphicRecord, Grap
 from matplotlib import pyplot as plt
 plt.style.use('ggplot')
 
-def naive_backtranslate(seq_object, codontable, speciestable):
+def get_translation_table():
     '''
+    take user input to select codon table
+    table choices and species choices lists are created from
+    >>> dir(CodonTable)
+    >>> dir(CodonTable.table_choices[choice])
     select ambiguous|unambiguous
     select DNA|RNA
-    select codon table from list
+    return codon table from list
+    '''
+    table_choices = [
+        'ambiguous_dna_by_name', 'ambiguous_generic_by_name', 'ambiguous_rna_by_name',
+        'generic_by_name', 'standard_dna_table', 'standard_rna_table',
+        'unambiguous_dna_by_name', 'unambiguous_rna_by_name'
+    ]
+    species_choices = [
+        'Alternative Flatworm Mitochondrial', 'Alternative Yeast Nuclear', 'Archaeal', 'Ascidian Mitochondrial',
+        'Bacterial', 'Blepharisma Macronuclear', 'Candidate Division SR1', 'Chlorophycean Mitochondrial', 'Ciliate Nuclear',
+        'Coelenterate Mitochondrial', 'Dasycladacean Nuclear', 'Echinoderm Mitochondrial', 'Euplotid Nuclear',
+        'Flatworm Mitochondrial', 'Gracilibacteria', 'Hexamita Nuclear', 'Invertebrate Mitochondrial',
+        'Mold Mitochondrial', 'Mycoplasma', 'Pachysolen tannophilus Nuclear Code', 'Plant Plastid',
+        'Protozoan Mitochondrial', 'Pterobranchia Mitochondrial', 'SGC0', 'SGC1', 'SGC2', 'SGC3',
+        'SGC4', 'SGC5', 'SGC8', 'SGC9', 'Scenedesmus obliquus Mitochondrial', 'Spiroplasma', 'Standard',
+        'Thraustochytrium Mitochondrial', 'Trematode Mitochondrial', 'Vertebrate Mitochondrial', 'Yeast Mitochondrial',
+    ]
+    codontable = 0
+    print('please select rna or dna, ambiguous or unambiguous.')
+    for index, table in enumerate(table_choices):
+        print('{}) {}'.format(index, table))
+    codontable = input('please enter table number: ')
+    codontable = int(codontable)
+    tablechoice = table_choices[codontable]
+    if tablechoice == 'standard_dna_table' or tablechoice == 'standard_rna_table':
+        return CodonTable.__dict__[tablechoice].forward_table
+
+    speciestable = 0
+    print('please select rna or dna, ambiguous or unambiguous.')
+    for index, table in enumerate(species_choices):
+        print('{}) {}'.format(index, table))
+    speciestable = input('please enter table number: ')
+    speciestable = int(speciestable)
+    specieschoice = species_choices[speciestable]
+
+    return CodonTable.__dict__[tablechoice][specieschoice].forward_table
+
+def naive_backtranslate(seq_object, target_codon_table):
+    '''
     parse given seq_object argument into peptide string
     back translate each amino acid to its potential codons
       i.e. reverse the codon table, keeping codons in a list
@@ -34,24 +76,6 @@ def naive_backtranslate(seq_object, codontable, speciestable):
     >>> print(total_permutations)
     >>> print('there are: ', len(str(total_permutations)), ' digits in the number of total permutations')
     '''
-    table_choices = [
-        'ambiguous_dna_by_name', 'ambiguous_generic_by_name', 'ambiguous_rna_by_name',
-        'generic_by_name', 'standard_dna_table', 'standard_rna_table',
-        'unambiguous_dna_by_name', 'unambiguous_rna_by_name'
-    ]
-    species_choices = [
-        'Alternative Flatworm Mitochondrial', 'Alternative Yeast Nuclear', 'Archaeal', 'Ascidian Mitochondrial',
-        'Bacterial', 'Blepharisma Macronuclear', 'Candidate Division SR1', 'Chlorophycean Mitochondrial', 'Ciliate Nuclear',
-        'Coelenterate Mitochondrial', 'Dasycladacean Nuclear', 'Echinoderm Mitochondrial', 'Euplotid Nuclear',
-        'Flatworm Mitochondrial', 'Gracilibacteria', 'Hexamita Nuclear', 'Invertebrate Mitochondrial',
-        'Mold Mitochondrial', 'Mycoplasma', 'Pachysolen tannophilus Nuclear Code', 'Plant Plastid',
-        'Protozoan Mitochondrial', 'Pterobranchia Mitochondrial', 'SGC0', 'SGC1', 'SGC2', 'SGC3',
-        'SGC4', 'SGC5', 'SGC8', 'SGC9', 'Scenedesmus obliquus Mitochondrial', 'Spiroplasma', 'Standard',
-        'Thraustochytrium Mitochondrial', 'Trematode Mitochondrial', 'Vertebrate Mitochondrial', 'Yeast Mitochondrial'
-    ]
-    table = table_choices[codontable]
-    species = species_choices[speciestable]
-    target_codon_table = CodonTable.__dict__[table][species].forward_table
     back_table = dict()
     for codon, amino in target_codon_table.items():
         if amino not in back_table.keys():
