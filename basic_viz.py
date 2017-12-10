@@ -6,6 +6,7 @@ from collections import Counter, defaultdict
 from itertools import product
 from dna_features_viewer import BiopythonTranslator, CircularGraphicRecord, GraphicFeature, GraphicRecord
 from matplotlib import pyplot as plt
+from typing import Iterable, List
 plt.style.use('ggplot')
 
 def get_translation_table():
@@ -41,7 +42,7 @@ def get_translation_table():
     codontable = int(codontable)
     tablechoice = table_choices[codontable]
     if tablechoice == 'standard_dna_table' or tablechoice == 'standard_rna_table':
-        return CodonTable.__dict__[tablechoice].forward_table
+        return CodonTable.__dict__[tablechoice].forward_table.forward_table
 
     speciestable = 0
     print('please select rna or dna, ambiguous or unambiguous.')
@@ -51,9 +52,9 @@ def get_translation_table():
     speciestable = int(speciestable)
     specieschoice = species_choices[speciestable]
 
-    return CodonTable.__dict__[tablechoice][specieschoice].forward_table
+    return CodonTable.__dict__[tablechoice][specieschoice].forward_table.forward_table
 
-def naive_backtranslate(seq_object, target_codon_table):
+def naive_backtranslate(seq_object: str) -> List:
     '''
     parse given seq_object argument into peptide string
     back translate each amino acid to its potential codons
@@ -76,6 +77,7 @@ def naive_backtranslate(seq_object, target_codon_table):
     >>> print(total_permutations)
     >>> print('there are: ', len(str(total_permutations)), ' digits in the number of total permutations')
     '''
+    target_codon_table = get_translation_table()
     back_table = dict()
     for codon, amino in target_codon_table.items():
         if amino not in back_table.keys():
@@ -85,7 +87,7 @@ def naive_backtranslate(seq_object, target_codon_table):
     new_seq_object = [back_table[amino] for amino in seq_object]
     return new_seq_object
 
-def get_peptide_index(nuc_sequence, prot_sequence, codon_count):
+def get_peptide_index(nuc_sequence: str, prot_sequence: str, codon_count: int) -> None:
     '''
     1. use naive_backtrace to get list of codons for each amino
     2. calculate Cartesian product of potential input codons
