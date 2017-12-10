@@ -194,6 +194,9 @@ def main(args):
             nucleotide_distribution(sequence, normed=args.normed)
         if args.peptide_distribution:
             peptide_distribution(sequence, normed=args.normed)
+        if args.naive_backtrace:
+            prot_seq = args.naive_backtrace.read()
+            get_peptide_index(str(sequence.seq), prot_seq, 3)
     elif args.demonstrate:
         demo_dna_features_viewer()
     else:
@@ -232,5 +235,13 @@ if __name__ == '__main__':
     parser.add_argument('-normed', '--normed',
         help='''plot distribution in normalised form''',
         default=False, action='store_true', dest='normed')
+    parser.add_argument('-nbt', '--naive_backtrace',
+        help='''give indices of protein sequence in DNA sequence
+        pass in a genbank or fasta file with the -f switch, and pass
+        in a text file following this switch, witn ONLY the peptide
+        sequence as a single line inside the file.''',
+        default=None,
+        nargs='?',
+        type=argparse.FileType('r'))
     args = parser.parse_args()
     main(args)
