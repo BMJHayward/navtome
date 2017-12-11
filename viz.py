@@ -42,7 +42,7 @@ def get_translation_table():
     codontable = int(codontable)
     tablechoice = table_choices[codontable]
     if tablechoice == 'standard_dna_table' or tablechoice == 'standard_rna_table':
-        return CodonTable.__dict__[tablechoice].forward_table.forward_table
+        return CodonTable.__dict__[tablechoice].forward_table
 
     speciestable = 0
     print('please select rna or dna, ambiguous or unambiguous.')
@@ -51,8 +51,11 @@ def get_translation_table():
     speciestable = input('please enter table number: ')
     speciestable = int(speciestable)
     specieschoice = species_choices[speciestable]
+    if tablechoice == 'ambiguous_dna_by_name' or tablechoice == 'ambiguous_generic_by_name' or tablechoice == 'ambiguous_rna_by_name':
+        return CodonTable.__dict__[tablechoice][specieschoice].forward_table.forward_table
 
-    return CodonTable.__dict__[tablechoice][specieschoice].forward_table.forward_table
+    return CodonTable.__dict__[tablechoice][specieschoice].forward_table
+
 
 def naive_backtranslate(seq_object: str) -> List:
     '''
