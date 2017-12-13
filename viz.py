@@ -1,13 +1,20 @@
 import argparse
-import os
-from Bio import SeqIO, SeqRecord, Seq
+from Bio import PDB, SeqIO, SeqRecord, Seq
 from Bio.Data import CodonTable
 from collections import Counter, defaultdict
-from itertools import product
 from dna_features_viewer import BiopythonTranslator, CircularGraphicRecord, GraphicFeature, GraphicRecord
+from itertools import chain, product
 from matplotlib import pyplot as plt
+import os
+import sys
 from typing import Iterable, List
 plt.style.use('ggplot')
+
+def create_distance_matrix(pdbfile, quiet=False):
+    derp = PDB.PDBParser(QUIET=quiet).get_structure('pdbfile', pdbfile)
+    allatoms = [[atm for atm in res.get_atom()] for res in derp.get_residues()]
+    atoms = list(chain(*allatoms))
+    return [[rowat - colat for rowat in atoms] for colat in atoms]
 
 def get_translation_table():
     '''
@@ -200,6 +207,8 @@ def main(args):
         if args.naive_backtrace:
             prot_seq = args.naive_backtrace.read()
             get_peptide_index(str(sequence.seq), prot_seq, 3)
+    if args.distance_matrix:
+        sys.stdout.write(str(create_distance_matrix(args.distance_matrix.name, quiet=True)))
     elif args.demonstrate:
         demo_dna_features_viewer()
     else:
@@ -243,6 +252,12 @@ if __name__ == '__main__':
         pass in a genbank or fasta file with the -f switch, and pass
         in a text file following this switch, witn ONLY the peptide
         sequence as a single line inside the file.''',
+        default=None,
+        nargs='?',
+        type=argparse.FileType('r'))
+    parser.add_argument('-dmat', '--distance_matrix',
+        help='''give the name of a pdbfile, get a distrance matrix of all atoms
+        in the protein''',
         default=None,
         nargs='?',
         type=argparse.FileType('r'))
