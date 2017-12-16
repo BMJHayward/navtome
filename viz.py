@@ -109,7 +109,7 @@ def get_peptide_index(nuc_sequence: str, prot_sequence: str, codon_count: int) -
     for seq in search_nucs:
         seq_string = ''.join(seq)
         try:
-            print(nuc_sequence.index(seq_string))
+            return nuc_sequence.index(seq_string)
             # to print all indices, but only works if looking for a single nucleotide:
             # [index for index, value in enumerate(nuc_sequence) if value == seq_string]
         except ValueError:
@@ -128,7 +128,7 @@ def demo_dna_features_viewer():
     ]
     record = GraphicRecord(sequence_length=1000, features=features)
     record.plot(figure_width=5)
-    plt.show()
+    return plt
   
     # circle_record = CircularGraphicRecord(sequence_length=1000, features=features)
     # circle_record.plot_with_bokeh(figure_width=5)
@@ -159,7 +159,7 @@ def nucleotide_distribution(sequence, **kwargs):
     else:
         plt.hist(make_trigrams(sequence))
     plt.xticks(rotation=90)
-    plt.show()
+    return plt
 
 def get_peptide_toplot(sequence):
     peptide_alphabet = 'ACDEFGHIKLMNPQRSTVWYBXZJUO*'
@@ -177,7 +177,7 @@ def peptide_distribution(sequence, **kwargs):
         plt.hist(get_peptide_toplot(sequence), normed=True)
     else:
         plt.hist(get_peptide_toplot(sequence))
-    plt.show()
+    return plt
 
 def plot_ABI(abifilename):
     record = SeqIO.read(abifilename, 'abi')
@@ -191,26 +191,31 @@ def plot_ABI(abifilename):
     plt.plot(trace['DATA10'], color='red')
     plt.plot(trace['DATA11'], color='green')
     plt.plot(trace['DATA12'], color='yellow')
-    plt.show()
+    return plt
 
 def main(args):
     if args.filename:
         ext = {'gbk':'genbank','fasta':'fasta'}
+        filename = args.filename.split('.')[:-1][0]
         filetype = ext[args.filename.name.split('.')[-1]]
         sequence = SeqIO.read(args.filename, filetype)
         if args.abi_trace:
-            plot_ABI(sequence)
+            abiplot = plot_ABI(sequence)
+            abiplot.savefig('abiplot.png', transparent=True, bbox_inches='tight')
         if args.nucleotide_distribution:
-            nucleotide_distribution(sequence, normed=args.normed)
+            nucplot = nucleotide_distribution(sequence, normed=args.normed)
+            nucplot.savefig('nucplot.png', transparent=True, bbox_inches='tight')
         if args.peptide_distribution:
-            peptide_distribution(sequence, normed=args.normed)
+            pepplot = peptide_distribution(sequence, normed=args.normed)
+            pepplot.savefig('pepplot.png', transparent=True, bbox_inches='tight')
         if args.naive_backtrace:
             prot_seq = args.naive_backtrace.read()
-            get_peptide_index(str(sequence.seq), prot_seq, 3)
+            sys.stdout.write(str(get_peptide_index(str(sequence.seq), prot_seq, 3)))
     if args.distance_matrix:
         sys.stdout.write(str(create_distance_matrix(args.distance_matrix.name, quiet=True)))
     elif args.demonstrate:
-        demo_dna_features_viewer()
+        demoplot = demo_dna_features_viewer()
+        demoplot.savefig('demoplot.png', transparent=True, bbox_inches='tight')
     else:
         print(args)
        
@@ -263,3 +268,4 @@ if __name__ == '__main__':
         type=argparse.FileType('r'))
     args = parser.parse_args()
     main(args)
+
