@@ -86,3 +86,18 @@ __pycache__/
 *.pickle
 *.PICKLE
 *.txt
+
+
+# Data Files #
+##############
+*.fasta
+*.fa
+*.faa
+*.ffn
+*.fna
+*.frn
+*.genbank
+*.gb
+*.gbk
+*.asn
+
