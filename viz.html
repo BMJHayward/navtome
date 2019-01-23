@@ -35,6 +35,25 @@
     		return fileSections;
     	};
 
+        parseGenbank = (fileObj) =>
+        {
+            var fileSections = [];
+            var lines = fileObj.split(/\r\n|\n/);
+            var featIdx;
+            var originIdx;
+            lines.forEach((line) => {
+                if (line.toUpperCase().includes('FEATURES')) {featIdx = lines.indexOf(line)};
+                if (line.toUpperCase().includes('ORIGIN')) {originIdx = lines.indexOf(line)};
+            });
+            console.log(featIdx);
+            console.log(originIdx);
+            fileSections.push({ desc: 'metadata', data: lines.slice(0, featIdx)});
+            fileSections.push({ desc: 'features', data: lines.slice(featIdx + 1, originIdx)});
+            fileSections.push({ desc: 'origin', data: lines.slice(originIdx + 1)});
+            console.log(fileSections);
+            return fileSections;
+        };
+
         getFileText = (fileName, fileType, fileData) =>
         {
             switch (fileType) {
@@ -43,8 +62,10 @@
                   return parseFasta(fileData);
                 case 'genbank':
                 case 'gb':
+                case 'gbk':
+                  return parseGenbank(fileData);
                 default:
-                return [{'desc':fileName, 'data':fileData}];
+                  return [{'desc':fileName, 'data':fileData}];
             };
         }
     </script>
