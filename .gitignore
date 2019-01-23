@@ -68,6 +68,7 @@ Thumbs.db
 bin/
 data/
 dumpdir/
+.idea/
 log/
 media/
 scrap/

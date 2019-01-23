@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!--[if lte IE 6]><html class="preIE7 preIE8 preIE9"><![endif]-->
+<!--[if IE 7]><html class="preIE8 preIE9"><![endif]-->
+<!--[if IE 8]><html class="preIE9"><![endif]-->
+<!--[if gte IE 9]><!-->
+<html>
+<!--<![endif]-->
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Navtome</title>
+    <meta name="author" content="name">
+    <meta name="description" content="description here">
+    <meta name="keywords" content="keywords,here">
+    <link rel="shortcut icon" href="favicon.ico" type="image/vnd.microsoft.icon">
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=font1|font2|etc" type="text/css">
+    <script>
+        parseFasta = (fileObj) =>
+    	{
+    		var fileSections = [];
+    		var lines = fileObj.split(/\r\n|\n/);
+    		lines.forEach((line) => {
+	    		if (line[0] == '>'){
+	    		    /*add to description*/
+	    		    fileSections.push({ desc: line.slice(1), data: '' });
+	    		}
+		    	else if (line == /\r\n|\n/){/*blank line, do nothing*/}
+			    else {
+				    /*add to string, pair with description above*/
+				    fileSections[fileSections.length-1].data += line;
+				}
+    		})
+    		return fileSections;
+    	};
+
+        getFileText = (fileName, fileType, fileData) =>
+        {
+            switch (fileType) {
+                case 'fasta':
+                case 'fa':
+                  return parseFasta(fileData);
+                case 'genbank':
+                case 'gb':
+                default:
+                return [{'desc':fileName, 'data':fileData}];
+            };
+        }
+    </script>
+</head>
+
+<body>
+    <script>
+    var loadFile = function(event) {
+        var input = event.target;
+        var fname = input.files[0].name;
+        var ftype = fname.substring(fname.lastIndexOf('.') + 1, fname.length) || fname;
+
+        var reader = new FileReader();
+        reader.readAsText(input.files[0]);
+        reader.onload = function(e) {
+            var textZone = document.getElementById('textZone');
+            while (textZone.firstChild) textZone.removeChild(textZone.firstChild);
+            var textBlocks = getFileText(fname, ftype, reader.result);
+            textBlocks.forEach((textBlock) =>
+                {
+                    var zoneItem = document.createElement('li');
+                    var innerDesc = document.createElement('p');
+                    innerDesc.innerHTML = textBlock.desc;
+                    innerDesc.style += 'bold';
+                    var innerText = document.createElement('textarea');
+                    innerText.value = textBlock.data;
+                    zoneItem.appendChild(innerDesc)
+                    zoneItem.appendChild(innerText);
+                    textZone.appendChild(zoneItem);
+                });
+        };
+    };
+    </script>
+    <input type='file' accept='text/plain' onchange='loadFile(event)' multiple='false'><br>
+    <div id='dataHolder'>
+        <ul id='textZone' style='list-style-type:none'>
+        </ul>
+    </div>
+</body>
+
+</html>
