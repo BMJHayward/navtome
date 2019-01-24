@@ -16,88 +16,11 @@
     <meta name="keywords" content="keywords,here">
     <link rel="shortcut icon" href="favicon.ico" type="image/vnd.microsoft.icon">
     <link rel="stylesheet" href="//fonts.googleapis.com/css?family=font1|font2|etc" type="text/css">
-    <script>
-        parseFasta = (fileObj) =>
-    	{
-    		var fileSections = [];
-    		var lines = fileObj.split(/\r\n|\n/);
-    		lines.forEach((line) => {
-	    		if (line[0] == '>'){
-	    		    /*add to description*/
-	    		    fileSections.push({ desc: line.slice(1), data: '' });
-	    		}
-		    	else if (line == /\r\n|\n/){/*blank line, do nothing*/}
-			    else {
-				    /*add to string, pair with description above*/
-				    fileSections[fileSections.length-1].data += line;
-				}
-    		})
-    		return fileSections;
-    	};
-
-        parseGenbank = (fileObj) =>
-        {
-            var fileSections = [];
-            var lines = fileObj.split(/\r\n|\n/);
-            var featIdx;
-            var originIdx;
-            lines.forEach((line) => {
-                if (line.toUpperCase().includes('FEATURES')) {featIdx = lines.indexOf(line)};
-                if (line.toUpperCase().includes('ORIGIN')) {originIdx = lines.indexOf(line)};
-            });
-            console.log(featIdx);
-            console.log(originIdx);
-            fileSections.push({ desc: 'metadata', data: lines.slice(0, featIdx)});
-            fileSections.push({ desc: 'features', data: lines.slice(featIdx + 1, originIdx)});
-            fileSections.push({ desc: 'origin', data: lines.slice(originIdx + 1)});
-            console.log(fileSections);
-            return fileSections;
-        };
-
-        getFileText = (fileName, fileType, fileData) =>
-        {
-            switch (fileType) {
-                case 'fasta':
-                case 'fa':
-                  return parseFasta(fileData);
-                case 'genbank':
-                case 'gb':
-                case 'gbk':
-                  return parseGenbank(fileData);
-                default:
-                  return [{'desc':fileName, 'data':fileData}];
-            };
-        }
-    </script>
+    <script src='./viz.js'></script>
 </head>
 
 <body>
     <script>
-    var loadFile = function(event) {
-        var input = event.target;
-        var fname = input.files[0].name;
-        var ftype = fname.substring(fname.lastIndexOf('.') + 1, fname.length) || fname;
-
-        var reader = new FileReader();
-        reader.readAsText(input.files[0]);
-        reader.onload = function(e) {
-            var textZone = document.getElementById('textZone');
-            while (textZone.firstChild) textZone.removeChild(textZone.firstChild);
-            var textBlocks = getFileText(fname, ftype, reader.result);
-            textBlocks.forEach((textBlock) =>
-                {
-                    var zoneItem = document.createElement('li');
-                    var innerDesc = document.createElement('p');
-                    innerDesc.innerHTML = textBlock.desc;
-                    innerDesc.style += 'bold';
-                    var innerText = document.createElement('textarea');
-                    innerText.value = textBlock.data;
-                    zoneItem.appendChild(innerDesc)
-                    zoneItem.appendChild(innerText);
-                    textZone.appendChild(zoneItem);
-                });
-        };
-    };
     </script>
     <input type='file' accept='text/plain' onchange='loadFile(event)' multiple='false'><br>
     <div id='dataHolder'>
