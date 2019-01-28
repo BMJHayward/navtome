@@ -1,3 +1,4 @@
+const anyToJson = require('bio-parsers/parsers/anyToJson');
 parseFasta = (fileObj) =>
 {
 	var fileSections = [];

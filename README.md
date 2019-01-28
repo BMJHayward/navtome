@@ -6,4 +6,5 @@
  - a parser for the various file types to extract sequence data
  - basic machine learning algorithms
  - an embedded python interpreter to write your own scripts
+ - web frontend for basic visualisation
 
