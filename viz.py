@@ -129,7 +129,7 @@ def demo_dna_features_viewer():
     record = GraphicRecord(sequence_length=1000, features=features)
     record.plot(figure_width=5)
     return plt
-  
+
     # circle_record = CircularGraphicRecord(sequence_length=1000, features=features)
     # circle_record.plot_with_bokeh(figure_width=5)
     # seq_record = SeqIO.read('data/Lactobacillus_reuteri/GCA_000016825.1_Lactobacillus_reuteri_DSM_20016_Complete_Genome.fasta', 'fasta')
@@ -196,18 +196,20 @@ def plot_ABI(abifilename):
 def main(args):
     if args.filename:
         ext = {'gbk':'genbank','fasta':'fasta'}
-        filename = args.filename.split('.')[:-1][0]
-        filetype = ext[args.filename.name.split('.')[-1]]
+        filename, filetype = args.filename.name.split('.')
         sequence = SeqIO.read(args.filename, filetype)
         if args.abi_trace:
             abiplot = plot_ABI(sequence)
             abiplot.savefig('abiplot.png', transparent=True, bbox_inches='tight')
+            print('abiplot.png created')
         if args.nucleotide_distribution:
             nucplot = nucleotide_distribution(sequence, normed=args.normed)
             nucplot.savefig('nucplot.png', transparent=True, bbox_inches='tight')
+            print('nucplot.png created')
         if args.peptide_distribution:
             pepplot = peptide_distribution(sequence, normed=args.normed)
             pepplot.savefig('pepplot.png', transparent=True, bbox_inches='tight')
+            print('pepplot.png created')
         if args.naive_backtrace:
             prot_seq = args.naive_backtrace.read()
             sys.stdout.write(str(get_peptide_index(str(sequence.seq), prot_seq, 3)))
@@ -216,9 +218,10 @@ def main(args):
     elif args.demonstrate:
         demoplot = demo_dna_features_viewer()
         demoplot.savefig('demoplot.png', transparent=True, bbox_inches='tight')
+        print('demoplot.png created')
     else:
         print(args)
-       
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -239,7 +242,7 @@ if __name__ == '__main__':
         default=False, action='store_true')
     parser.add_argument('-pep', '--peptide_distribution',
         help='''Plots distribution of amino acids in a peptide chain.
-                If given a nucleotide sequence, will perform translation if RNA, and 
+                If given a nucleotide sequence, will perform translation if RNA, and
                 transcription+translation if DNA''',
         default=False, action='store_true')
     parser.add_argument('-f', '--filename',
