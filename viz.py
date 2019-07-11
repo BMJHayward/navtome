@@ -10,6 +10,10 @@ import sys
 from typing import Iterable, List
 plt.style.use('ggplot')
 
+PLOTDIR = 'plots'
+if not os.path.exists(PLOTDIR):
+    os.mkdir(os.path.join(os.curdir, PLOTDIR))
+
 def create_distance_matrix(pdbfile, quiet=False):
     derp = PDB.PDBParser(QUIET=quiet).get_structure('pdbfile', pdbfile)
     allatoms = [[atm for atm in res.get_atom()] for res in derp.get_residues()]
@@ -130,12 +134,6 @@ def demo_dna_features_viewer():
     record.plot(figure_width=5)
     return plt
 
-    # circle_record = CircularGraphicRecord(sequence_length=1000, features=features)
-    # circle_record.plot_with_bokeh(figure_width=5)
-    # seq_record = SeqIO.read('data/Lactobacillus_reuteri/GCA_000016825.1_Lactobacillus_reuteri_DSM_20016_Complete_Genome.fasta', 'fasta')
-    # graphic_record = BiopythonTranslator().translate_record(seq_record)
-    # ax, _ = graphic_record.plot(figure_width=10)
-
 def ngrams(sequence, n):
     sequence = list(sequence)
     count = max(0, len(sequence) - n + 1)
@@ -193,37 +191,7 @@ def plot_ABI(abifilename):
     plt.plot(trace['DATA12'], color='yellow')
     return plt
 
-def main(args):
-    if args.filename:
-        ext = {'gbk':'genbank','fasta':'fasta'}
-        filename, filetype = args.filename.name.split('.')
-        sequence = SeqIO.read(args.filename, filetype)
-        if args.abi_trace:
-            abiplot = plot_ABI(sequence)
-            abiplot.savefig('abiplot.png', transparent=True, bbox_inches='tight')
-            print('abiplot.png created')
-        if args.nucleotide_distribution:
-            nucplot = nucleotide_distribution(sequence, normed=args.normed)
-            nucplot.savefig('nucplot.png', transparent=True, bbox_inches='tight')
-            print('nucplot.png created')
-        if args.peptide_distribution:
-            pepplot = peptide_distribution(sequence, normed=args.normed)
-            pepplot.savefig('pepplot.png', transparent=True, bbox_inches='tight')
-            print('pepplot.png created')
-        if args.naive_backtrace:
-            prot_seq = args.naive_backtrace.read()
-            sys.stdout.write(str(get_peptide_index(str(sequence.seq), prot_seq, 3)))
-    if args.distance_matrix:
-        sys.stdout.write(str(create_distance_matrix(args.distance_matrix.name, quiet=True)))
-    elif args.demonstrate:
-        demoplot = demo_dna_features_viewer()
-        demoplot.savefig('demoplot.png', transparent=True, bbox_inches='tight')
-        print('demoplot.png created')
-    else:
-        print(args)
-
-
-if __name__ == '__main__':
+def make_parser():
     parser = argparse.ArgumentParser(
         description='Basic genomic visualisation and stats',
         epilog='''Plots an abi trace, or distributions of codons
@@ -269,6 +237,46 @@ if __name__ == '__main__':
         default=None,
         nargs='?',
         type=argparse.FileType('r'))
+    return parser
+
+def main(args):
+    if args.filename:
+        ext = {'gbk':'genbank','fasta':'fasta'}
+        filename, filetype = args.filename.name.split('.')
+        sequence = SeqIO.read(args.filename, filetype)
+        if args.abi_trace:
+            abiplot = plot_ABI(sequence)
+            fname = f"{filename}_abiplot.png"
+            fpath = os.path.join(PLOTDIR, fname)
+            abiplot.savefig(fpath, transparent=True, bbox_inches='tight')
+            print('abiplot.png created')
+        if args.nucleotide_distribution:
+            nucplot = nucleotide_distribution(sequence, normed=args.normed)
+            fname = f"{filename}_nucplot.png"
+            fpath = os.path.join(PLOTDIR, fname)
+            nucplot.savefig(fpath, transparent=True, bbox_inches='tight')
+            print('nucplot.png created')
+        if args.peptide_distribution:
+            pepplot = peptide_distribution(sequence, normed=args.normed)
+            fname = f"{filename}_pepplot.png"
+            fpath = os.path.join(PLOTDIR, fname)
+            pepplot.savefig(fpath, transparent=True, bbox_inches='tight')
+            print('pepplot.png created')
+        if args.naive_backtrace:
+            prot_seq = args.naive_backtrace.read()
+            sys.stdout.write(str(get_peptide_index(str(sequence.seq), prot_seq, 3)))
+    if args.distance_matrix:
+        sys.stdout.write(str(create_distance_matrix(args.distance_matrix.name, quiet=True)))
+    elif args.demonstrate:
+        demoplot = demo_dna_features_viewer()
+        fpath = os.path.join(PLOTDIR, 'demoplot.png')
+        demoplot.savefig(fpath, transparent=True, bbox_inches='tight')
+        print('demoplot.png created')
+    else:
+        print(args)
+
+if __name__ == '__main__':
+    parser = make_parser()
     args = parser.parse_args()
     main(args)
 
