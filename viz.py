@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 from Bio import PDB, SeqIO, SeqRecord, Seq
 from Bio.Data import CodonTable
@@ -272,11 +273,11 @@ def main(args):
         fpath = os.path.join(PLOTDIR, 'demoplot.png')
         demoplot.savefig(fpath, transparent=True, bbox_inches='tight')
         print('demoplot.png created')
-    else:
-        print(args)
 
 if __name__ == '__main__':
     parser = make_parser()
+    if len(sys.argv[1:]) == 0:
+        parser.print_help()
+        parser.exit()
     args = parser.parse_args()
     main(args)
-
