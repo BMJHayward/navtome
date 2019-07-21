@@ -8,12 +8,49 @@ from itertools import chain, product
 from matplotlib import pyplot as plt
 import os
 import sys
+import textdistance as TD
 from typing import Iterable, List
+
 plt.style.use('ggplot')
 
 PLOTDIR = 'plots'
 if not os.path.exists(PLOTDIR):
     os.mkdir(os.path.join(os.curdir, PLOTDIR))
+
+textdistfuncs = [
+    'cosine',
+    'damerau_levenshtein',
+    'editex',
+    'entropy_ncd',
+    'gotoh',
+    'hamming',
+    'identity',
+    'jaccard',
+    'jaro',
+    'jaro_winkler',
+    'lcsseq',
+    'lcsstr',
+    'length',
+    'levenshtein',
+    'lzma_ncd',
+    'matrix',
+    'mlipns',
+    'monge_elkan',
+    'mra',
+    'needleman_wunsch',
+    'overlap',
+    'postfix',
+    'prefix',
+    'ratcliff_obershelp',
+    'rle_ncd',
+    'smith_waterman',
+    'sorensen',
+    'sorensen_dice',
+    'sqrt_ncd',
+    'strcmp95',
+    'tversky',
+    'zlib_ncd',
+]
 
 def create_distance_matrix(pdbfile, quiet=False):
     derp = PDB.PDBParser(QUIET=quiet).get_structure('pdbfile', pdbfile)
@@ -192,13 +229,25 @@ def plot_ABI(abifilename):
     plt.plot(trace['DATA12'], color='yellow')
     return plt
 
+def get_genbank_sequence(gb_file):
+    gbfile = SeqIO.read(open(gb_file, 'r'), 'genbank')
+    return str(gbfile.seq)
+
+def get_fasta_sequence(fs_file):
+    fasfile = SeqIO.read(open(fs_file, 'r'), 'fasta')
+    return str(fasfile.seq)
+
+def calc_sequence_similarity(seq1, seq2):
+    for func in textdistfuncs:
+        print(f'{func}:')
+        result = TD.__dict__[func](seq1, seq2)
+        print(result)
+
 def make_parser():
     parser = argparse.ArgumentParser(
         description='Basic genomic visualisation and stats',
         epilog='''Plots an abi trace, or distributions of codons
-                  or amino acids.
-               '''
-    )
+                  or amino acids.''')
     parser.add_argument('-demo', '--demonstrate',
         help='will demonstrate graphic record of a small plasmid',
         default=False, action='store_true')
