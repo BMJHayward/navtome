@@ -1,3 +1,5 @@
+import viz
+
 def test_create_distance_matrix():
     pass
 
@@ -38,8 +40,15 @@ def test_get_genbank_sequence():
 def test_get_fasta_sequence():
     pass
 
+def test_iter_calc_sequence_similarity():
+    pass
+
 def test_calc_sequence_similarity():
     pass
+
+def test_multiprocess_similarity():
+    result = viz.multiprocess_similarity
+    print(result)
 
 def test_make_parser():
     pass

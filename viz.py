@@ -6,6 +6,7 @@ from collections import Counter, defaultdict
 from dna_features_viewer import BiopythonTranslator, CircularGraphicRecord, GraphicFeature, GraphicRecord
 from itertools import chain, product
 from matplotlib import pyplot as plt
+import multiprocessing as mp
 import os
 import sys
 import textdistance as TD
@@ -237,11 +238,25 @@ def get_fasta_sequence(fs_file):
     fasfile = SeqIO.read(open(fs_file, 'r'), 'fasta')
     return str(fasfile.seq)
 
-def calc_sequence_similarity(seq1, seq2):
-    for func in textdistfuncs:
-        print(f'{func}:')
-        result = TD.__dict__[func](seq1, seq2)
-        print(result)
+def calc_sequence_similarity(func, seq1, seq2):
+    print(f'{func}:')
+    result = TD.__dict__[func](seq1, seq2)
+    print(result)
+
+def multiprocTextfuncs(seq1, seq2):
+    '''
+    note this pegs all cores on my old i5 for about a minute
+    using genbank files < 1MB
+    >>> import viz
+    >>> seq1 = viz.get_genbank_sequence('sequence.gb')
+    >>> seq2 = viz.get_genbank_sequence('sequence2.gb')
+    >>> viz.multiprocTextfuncs(seq1,seq2)
+    '''
+    jobs = []
+    for funcname in textdistfuncs:
+        p = mp.Process(target=calc_sequence_similarity, args=(funcname, seq1, seq2))
+        jobs.append(p)
+        p.start()
 
 def make_parser():
     parser = argparse.ArgumentParser(
