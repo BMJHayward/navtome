@@ -238,10 +238,11 @@ def get_fasta_sequence(fs_file):
     fasfile = SeqIO.read(open(fs_file, 'r'), 'fasta')
     return str(fasfile.seq)
 
-def calc_sequence_similarity(func, seq1, seq2):
-    print(f'{func}:')
+def calc_sequence_similarity(func, seq1, seq2, queue):
     result = TD.__dict__[func](seq1, seq2)
-    print(result)
+    if queue:
+        queue.put({func:result})
+    else: return {func:result}
 
 def multiprocTextfuncs(seq1, seq2):
     '''
@@ -250,13 +251,23 @@ def multiprocTextfuncs(seq1, seq2):
     >>> import viz
     >>> seq1 = viz.get_genbank_sequence('sequence.gb')
     >>> seq2 = viz.get_genbank_sequence('sequence2.gb')
-    >>> viz.multiprocTextfuncs(seq1,seq2)
+    >>> resultlist = viz.multiprocTextfuncs(seq1,seq2)
+    >>> resultdict = {k:v for x in resultlist for k,v in x.items()}
     '''
     jobs = []
+    results = []
+    queue = mp.Queue()
     for funcname in textdistfuncs:
-        p = mp.Process(target=calc_sequence_similarity, args=(funcname, seq1, seq2))
+        p = mp.Process(target=calc_sequence_similarity, args=(funcname, seq1, seq2, queue))
         jobs.append(p)
         p.start()
+    for job in jobs:
+        res = queue.get()
+        results.append(res)
+    for job in jobs:
+        job.join()
+    return results
+
 
 def make_parser():
     parser = argparse.ArgumentParser(
