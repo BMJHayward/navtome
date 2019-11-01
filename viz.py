@@ -18,6 +18,10 @@ PLOTDIR = 'plots'
 if not os.path.exists(PLOTDIR):
     os.mkdir(os.path.join(os.curdir, PLOTDIR))
 
+DATADIR = 'data'
+if not os.path.exists(DATADIR):
+    os.mkdir(os.path.join(os.curdir, DATADIR))
+
 textdistfuncs = [
     'cosine',
     'damerau_levenshtein',
