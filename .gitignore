@@ -72,7 +72,6 @@ dumpdir/
 log/
 media/
 scrap/
-src/
 static/
 tmp/
 __pycache__/

@@ -26,17 +26,18 @@ from PySide2.QtPrintSupport import *
 from PySide2.QtQml import QQmlApplicationEngine
 from PySide2.QtWidgets import *
 
+DEV = False
 EXPIRY_DATE = '9999-12-31'
+HELP_STRING = 'INSERT INSTRUCTIONS HERE'
 
 
 class QHLine(QFrame):
-    def __init__(self, stretch):
+    def __init__(self):
         super(QHLine, self).__init__()
         self.setFrameShape(QFrame.HLine)
         self.setFrameShadow(QFrame.Sunken)
         sizepol = QtWidgets.QSizePolicy
         policy = QtWidgets.QSizePolicy(sizepol.Expanding, sizepol.Fixed)
-        policy.setHorizontalStretch(stretch)
         self.setSizePolicy(policy)
 
 
@@ -47,17 +48,26 @@ class QVLine(QFrame):
         self.setFrameShadow(QFrame.Sunken)
 
 
+class FileTabs(QTabWidget):
+    def __init__(self, *args, **kwargs):
+        super(FileTabs, self).__init__(*args, **kwargs)
+        tab = QTextEdit()
+        self.addTab(tab, 'File')
+
+
 class Grid(QWidget):
     def __init__(self, *args, **kwargs):
         super(Grid, self).__init__(*args, **kwargs)
         # make the widgets
+        buttons = QVBoxLayout()
+        for i in range(4):
+            buttons.addWidget(QPushButton())
         layout = QGridLayout()
 
-        layout.addWidget(QLabel('template11'), 0, 0, 1, 1)
-        layout.addWidget(QComboBox(), 0, 1, 1, 1)
-        layout.addWidget(QHLine(), 1, 0, 1, 2)
-        layout.addWidget(QLabel('template2'), 2, 0, 1, 1)
-        layout.addWidget(QComboBox(), 2, 1, 1, 1)
+        layout.addLayout(buttons, 0, 0, 9, 1)
+        layout.addWidget(FileTabs(), 0, 1, 9, 4)
+        layout.addWidget(QWidget(), 0, 5, 4, 4)
+        layout.addWidget(QWidget(), 4, 5, 5, 4)
         self.setLayout(layout)
 
 
@@ -73,7 +83,7 @@ class MainWindow(QMainWindow):
 
         def showHelp():
             helpBox = QMessageBox()
-            helpBox.setText(HELP_DICT)
+            helpBox.setText(HELP_STRING)
             helpButton = QPushButton('OK')
             helpBox.setDefaultButton(helpButton)
             helpBox.exec_()
@@ -105,6 +115,9 @@ class AppContext(AppCtx):
     def __init__(self, *args, **kwargs):
         super(AppContext, self).__init__(*args, **kwargs)
         self.session_id = str(uuid.uuid4()) # good for debugging
+        appFont = QFont()
+        appFont.setStyleStrategy(appFont.PreferAntialias)
+        self.app.setFont(appFont)
 
     def run(self):
         self.grid = Grid()
