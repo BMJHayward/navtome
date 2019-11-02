@@ -17,6 +17,7 @@ from PySide2.QtCore import (Qt, QUrl, Signal, Slot, QTimer, QObject)
 from PySide2.QtGui import (
         QColor,
         QFont,
+        QIcon,
         QPainter,
         QPen,
         QPixmap,
@@ -60,8 +61,12 @@ class Grid(QWidget):
         super(Grid, self).__init__(*args, **kwargs)
         # make the widgets
         buttons = QVBoxLayout()
-        for i in range(4):
-            buttons.addWidget(QPushButton())
+        for i in range(9):
+            butt = QPushButton(f'Button {i}')
+            butt.setIcon(QIcon(QPixmap(appctxt.get_resource('icon/64.png'))))
+            butt.setFixedSize(64, 64)
+            buttons.addWidget(butt)
+        buttons.addStretch()
         layout = QGridLayout()
 
         layout.addLayout(buttons, 0, 0, 9, 1)
@@ -77,8 +82,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('BETA: app template version 0.0.1')
         self.menu = self.menuBar()
         self.file_menu = self.menu.addMenu('File')
-        self.file_menu = self.menu.addMenu('Edit')
-        self.help_menu = self.menu.addMenu('View')
+        self.edit_menu = self.menu.addMenu('Edit')
+        self.view_menu = self.menu.addMenu('View')
         self.help_menu = self.menu.addMenu('Help')
 
         def showHelp():
@@ -124,7 +129,7 @@ class AppContext(AppCtx):
         if DEV:
             print('show DEV things here...')
         self.mainWindow = MainWindow(self.grid)
-        self.mainWindow.resize(1600, 900)
+        self.mainWindow.resize(1280, 720)
         self.mainWindow.show()
         if not DEV and datetime.today().isoformat() > EXPIRY_DATE:
             exitBox = QMessageBox()
