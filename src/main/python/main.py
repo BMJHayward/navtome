@@ -31,6 +31,22 @@ DEV = False
 EXPIRY_DATE = '9999-12-31'
 HELP_STRING = 'INSERT INSTRUCTIONS HERE'
 
+def makeButtons():
+    buttons = QVBoxLayout()
+    for i in range(8):
+        butt = QPushButton()
+        butt.setIcon(QIcon(QPixmap(appctxt.get_resource('icon/64.png'))))
+        butt.setFixedSize(96, 96)
+        buttons.addWidget(butt)
+    buttons.addStretch()
+    return buttons
+
+
+def makePlotWindow(pic):
+        image = QLabel()
+        pic = QPixmap(appctxt.get_resource(pic))
+        image.setPixmap(pic)
+        return image
 
 class QHLine(QFrame):
     def __init__(self):
@@ -55,24 +71,19 @@ class FileTabs(QTabWidget):
         tab = QTextEdit()
         self.addTab(tab, 'File')
 
-
 class Grid(QWidget):
     def __init__(self, *args, **kwargs):
         super(Grid, self).__init__(*args, **kwargs)
         # make the widgets
-        buttons = QVBoxLayout()
-        for i in range(9):
-            butt = QPushButton(f'Button {i}')
-            butt.setIcon(QIcon(QPixmap(appctxt.get_resource('icon/64.png'))))
-            butt.setFixedSize(64, 64)
-            buttons.addWidget(butt)
-        buttons.addStretch()
+        buttons = makeButtons()
         layout = QGridLayout()
+        demoplot = makePlotWindow('plot/demoplot.png')
+        nucplot = makePlotWindow('plot/nucplot.png')
 
         layout.addLayout(buttons, 0, 0, 9, 1)
         layout.addWidget(FileTabs(), 0, 1, 9, 4)
-        layout.addWidget(QWidget(), 0, 5, 4, 4)
-        layout.addWidget(QWidget(), 4, 5, 5, 4)
+        layout.addWidget(demoplot, 0, 5, 4, 4)
+        layout.addWidget(nucplot, 4, 5, 4, 4)
         self.setLayout(layout)
 
 
