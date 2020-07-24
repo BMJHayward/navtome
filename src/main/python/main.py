@@ -69,16 +69,22 @@ class FileTabs(QTabWidget):
     def __init__(self, *args, **kwargs):
         super(FileTabs, self).__init__(*args, **kwargs)
         tab = QTextEdit()
-        self.addTab(tab, 'File')
+        demoFile = 'data/NC_005816.gb'
+        demoText = open(appctxt.get_resource(demoFile), 'r').read()
+        demoName = demoFile.split('/')[-1]
+        tab.setDocumentTitle(demoName)
+        tab.setText(demoText)
+        self.addTab(tab, demoName)
 
 class Grid(QWidget):
     def __init__(self, *args, **kwargs):
         super(Grid, self).__init__(*args, **kwargs)
         # make the widgets
         buttons = makeButtons()
-        layout = QGridLayout()
+        # look into pyqtGraph for plotting at runtime
         demoplot = makePlotWindow('plot/demoplot.png')
         nucplot = makePlotWindow('plot/nucplot.png')
+        layout = QGridLayout()
 
         layout.addLayout(buttons, 0, 0, 9, 1)
         layout.addWidget(FileTabs(), 0, 1, 9, 4)
