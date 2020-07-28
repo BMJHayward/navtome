@@ -30,16 +30,16 @@ from PySide2.QtWidgets import *
 DEV = False
 EXPIRY_DATE = '9999-12-31'
 HELP_STRING = 'INSERT INSTRUCTIONS HERE'
-
-def makeButtons():
-    buttons = QVBoxLayout()
-    for i in range(8):
-        butt = QPushButton()
-        butt.setIcon(QIcon(QPixmap(appctxt.get_resource('icon/64.png'))))
-        butt.setFixedSize(96, 96)
-        buttons.addWidget(butt)
-    buttons.addStretch()
-    return buttons
+BTNFUNCS = {
+    'fn1': lambda: print('fn1'),
+    'fn2': lambda: print('fn2'),
+    'fn3': lambda: print('fn3'),
+    'fn4': lambda: print('fn4'),
+    'fn5': lambda: print('fn5'),
+    'fn6': lambda: print('fn6'),
+    'fn7': lambda: print('fn7'),
+    'fn8': lambda: print('fn8'),
+    }
 
 
 def makePlotWindow(pic):
@@ -65,6 +65,24 @@ class QVLine(QFrame):
         self.setFrameShadow(QFrame.Sunken)
 
 
+class VizButtons(QWidget):
+    def __init__(self, *args, **kwargs):
+        super(VizButtons, self).__init__(*args, **kwargs)
+        self.btnGroup = QButtonGroup()
+        self.btnGroup.buttonClicked[int].connect(self.onClick)
+        for btnFunc in BTNFUNCS.keys():
+            butt = QPushButton(btnFunc)
+            butt.func = btnFunc
+            butt.setIcon(QIcon(QPixmap(appctxt.get_resource('icon/64.png'))))
+            butt.setFixedSize(96, 96)
+            butt.clicked.connect(BTNFUNCS[btnFunc])
+            self.btnGroup.addButton(butt)
+
+    def onClick(self, id):
+        for btn in self.btnGroup.buttons():
+            if btn is self.btnGroup.button(id):
+                print(f'Button clicked: {id}')
+
 class FileTabs(QTabWidget):
     def __init__(self, *args, **kwargs):
         super(FileTabs, self).__init__(*args, **kwargs)
@@ -74,24 +92,43 @@ class FileTabs(QTabWidget):
         demoName = demoFile.split('/')[-1]
         tab.setDocumentTitle(demoName)
         tab.setText(demoText)
+        tab.filePath = appctxt.get_resource(demoFile)
         self.addTab(tab, demoName)
+        self.addTab(QWidget(), 'add tab')
+
 
 class Grid(QWidget):
     def __init__(self, *args, **kwargs):
         super(Grid, self).__init__(*args, **kwargs)
         # make the widgets
-        buttons = makeButtons()
+        vizbuttons = VizButtons()
+        buttonLayout = QVBoxLayout()
+        for btn in vizbuttons.btnGroup.buttons():
+            buttonLayout.addWidget(btn)
+        buttonLayout.addStretch()
+        fileTabs = FileTabs()
         # look into pyqtGraph for plotting at runtime
         demoplot = makePlotWindow('plot/demoplot.png')
         nucplot = makePlotWindow('plot/nucplot.png')
         layout = QGridLayout()
 
-        layout.addLayout(buttons, 0, 0, 9, 1)
-        layout.addWidget(FileTabs(), 0, 1, 9, 4)
+        layout.addLayout(buttonLayout, 0, 0, 9, 1)
+        layout.addWidget(fileTabs, 0, 1, 9, 4)
         layout.addWidget(demoplot, 0, 5, 4, 4)
         layout.addWidget(nucplot, 4, 5, 4, 4)
         self.setLayout(layout)
 
+    def buttFunc(self, funcname):
+        print(funcname)
+
+    def runButtonFunc(self, button):
+        currentFile = fileTabs.currentWidget()
+        try:
+            record = viz.SeqIO.read(currentFile.filePath, currentFile.filePath.split('.')[-1])
+        except ValueError:
+            record = viz.SeqIO.parse(currentFile.filePath, currentFile.filePath.split('.')[-1])
+        except: raise
+        return record
 
 class MainWindow(QMainWindow):
     def __init__(self, mainWidget):
