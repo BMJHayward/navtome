@@ -8,6 +8,7 @@ from itertools import chain, product
 from matplotlib import pyplot as plt
 import multiprocessing as mp
 import os
+from pathlib import Path
 import sys
 import textdistance as TD
 from typing import Iterable, List
@@ -195,10 +196,13 @@ def make_trigrams(sequence):
           .format(type(sequence))))
 
 def nucleotide_distribution(sequence, **kwargs):
-    if kwargs['normed']:
-        plt.hist(make_trigrams(sequence), normed=True)
-    else:
-        plt.hist(make_trigrams(sequence))
+    '''
+    return plot object of 20 most common trigrams
+    call `plt.show()` or `plt.savefig()` to use it
+    '''
+    gramCount = Counter(make_trigrams(sequence)).most_common(20)
+    lab, val = zip(*gramCount)
+    plt.bar(lab, val)
     plt.xticks(rotation=90)
     return plt
 
@@ -210,18 +214,17 @@ def get_peptide_toplot(sequence):
         return sequence.seq.transcribe().translate()
     elif type(sequence)==Seq.Seq:
         return sequence.transcribe().translate()
+    elif type(sequence)==str:
+        return Seq.Seq(sequence).transcribe().translate()
     else:
         raise TypeError('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'.format(type(sequence)))
 
 def peptide_distribution(sequence, **kwargs):
-    if kwargs['normed']:
-        plt.hist(get_peptide_toplot(sequence), normed=True)
-    else:
-        plt.hist(get_peptide_toplot(sequence))
+    plt.hist(get_peptide_toplot(sequence))
     return plt
 
 def plot_ABI(abifilename):
-    record = SeqIO.read(abifilename, 'abi')
+    record = get_abi(abifilename)
     record.annotations.keys()
     record.annotations['abif_raw'].keys()
     channels = ['DATA9', 'DATA10', 'DATA11', 'DATA12']
@@ -234,13 +237,23 @@ def plot_ABI(abifilename):
     plt.plot(trace['DATA12'], color='yellow')
     return plt
 
-def get_genbank_sequence(gb_file):
-    gbfile = SeqIO.read(open(gb_file, 'r'), 'genbank')
-    return str(gbfile.seq)
+def get_abi(abifile):
+    return SeqIO.read(abifile, 'abi').seq
 
-def get_fasta_sequence(fs_file):
-    fasfile = SeqIO.read(open(fs_file, 'r'), 'fasta')
-    return str(fasfile.seq)
+def get_genbank(gb_file):
+    return SeqIO.read(gb_file, 'genbank').seq
+
+def get_fasta(fs_file):
+    return SeqIO.read(fs_file, 'fasta').seq
+
+def get_seq(fs_file):
+    ext = Path(fs_file).suffixes[0].strip('.')
+    print(f'get_seq retrieving file:\n{fs_file}')
+    if ext == 'abi': return get_abi(fs_file)
+    elif ext == 'gbk': return get_genbank(fs_file)
+    elif ext == 'gb': return get_genbank(fs_file)
+    elif ext == 'fasta': return get_fasta(fs_file)
+    else: return SeqIO.SeqRecord()
 
 def calc_sequence_similarity(func, seq1, seq2, queue):
     result = TD.__dict__[func](seq1, seq2)
@@ -253,8 +266,8 @@ def multiprocTextfuncs(seq1, seq2):
     note this pegs all cores on my old i5 for about a minute
     using genbank files < 1MB
     >>> import viz
-    >>> seq1 = viz.get_genbank_sequence('sequence.gb')
-    >>> seq2 = viz.get_genbank_sequence('sequence2.gb')
+    >>> seq1 = viz.get_genbank('sequence.gb')
+    >>> seq2 = viz.get_genbank('sequence2.gb')
     >>> resultlist = viz.multiprocTextfuncs(seq1,seq2)
     >>> resultdict = {k:v for x in resultlist for k,v in x.items()}
     '''

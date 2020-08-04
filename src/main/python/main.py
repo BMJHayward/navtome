@@ -4,6 +4,7 @@ from enum import Enum
 from functools import partial
 import argparse
 import os
+from pathlib import Path
 import random
 import sys
 import typing
@@ -31,16 +32,26 @@ DEV = False
 EXPIRY_DATE = '9999-12-31'
 HELP_STRING = 'INSERT INSTRUCTIONS HERE'
 BTNFUNCS = {
-    'fn1': lambda: print('fn1'),
-    'fn2': lambda: print('fn2'),
-    'fn3': lambda: print('fn3'),
-    'fn4': lambda: print('fn4'),
-    'fn5': lambda: print('fn5'),
-    'fn6': lambda: print('fn6'),
-    'fn7': lambda: print('fn7'),
-    'fn8': lambda: print('fn8'),
+    'fn1': lambda _: print('fn1'),
+    'fn2': lambda _: print('fn2'),
+    'fn3': lambda _: print('fn3'),
+    'fn4': lambda _: print('fn4'),
+    'fn5': lambda _: print('fn5'),
+    'fn6': lambda _: print('fn6'),
+    'fn7': lambda _: print('fn7'),
+    'fn8': lambda _: print('fn8'),
     }
 
+VIZFUNCS = {
+    'nucdist': viz.nucleotide_distribution,
+    'pepdist': viz.peptide_distribution,
+    'fn3': lambda _: print(_),
+    'fn4': lambda _: print(_),
+    'fn5': lambda _: print(_),
+    'fn6': lambda _: print(_),
+    'fn7': lambda _: print(_),
+    'fn8': lambda _: print(_),
+    }
 
 def makePlotWindow(pic):
         image = QLabel()
@@ -70,13 +81,26 @@ class VizButtons(QWidget):
         super(VizButtons, self).__init__(*args, **kwargs)
         self.btnGroup = QButtonGroup()
         self.btnGroup.buttonClicked[int].connect(self.onClick)
-        for btnFunc in BTNFUNCS.keys():
-            butt = QPushButton(btnFunc)
-            butt.func = btnFunc
-            butt.setIcon(QIcon(QPixmap(appctxt.get_resource('icon/64.png'))))
-            butt.setFixedSize(96, 96)
-            butt.clicked.connect(BTNFUNCS[btnFunc])
-            self.btnGroup.addButton(butt)
+        self.btn1 = QPushButton()
+        self.btn2 = QPushButton()
+        self.btn3 = QPushButton()
+        self.btn4 = QPushButton()
+        self.btn5 = QPushButton()
+        self.btn6 = QPushButton()
+        self.btn7 = QPushButton()
+        self.btn8 = QPushButton()
+        self.btnGroup.addButton(self.btn1)
+        self.btnGroup.addButton(self.btn2)
+        self.btnGroup.addButton(self.btn3)
+        self.btnGroup.addButton(self.btn4)
+        self.btnGroup.addButton(self.btn5)
+        self.btnGroup.addButton(self.btn6)
+        self.btnGroup.addButton(self.btn7)
+        self.btnGroup.addButton(self.btn8)
+        for btn in self.btnGroup.buttons():
+            btn.setIcon(QIcon(QPixmap(appctxt.get_resource('icon/64.png'))))
+            btn.setFixedSize(96, 96)
+            # btn.clicked.connect(BTNFUNCS[btnFunc])
 
     def onClick(self, id):
         for btn in self.btnGroup.buttons():
@@ -100,35 +124,56 @@ class FileTabs(QTabWidget):
 class Grid(QWidget):
     def __init__(self, *args, **kwargs):
         super(Grid, self).__init__(*args, **kwargs)
+        self.PLOTDIR = appctxt.get_resource('plot')
+        print(f'PLOTDIR: {self.PLOTDIR}')
         # make the widgets
+        self.fileTabs = FileTabs()
         vizbuttons = VizButtons()
         buttonLayout = QVBoxLayout()
-        for btn in vizbuttons.btnGroup.buttons():
+        # for btn in vizbuttons.btnGroup.buttons():
+        for btn, fname, func in zip(vizbuttons.btnGroup.buttons(), VIZFUNCS.keys(), VIZFUNCS.values()):
             buttonLayout.addWidget(btn)
+            btn.setText(fname)
+            btn.clicked.connect(partial(self.runButtonFunc, btn.text()))
         buttonLayout.addStretch()
-        fileTabs = FileTabs()
         # look into pyqtGraph for plotting at runtime
         demoplot = makePlotWindow('plot/demoplot.png')
         nucplot = makePlotWindow('plot/nucplot.png')
         layout = QGridLayout()
 
         layout.addLayout(buttonLayout, 0, 0, 9, 1)
-        layout.addWidget(fileTabs, 0, 1, 9, 4)
+        layout.addWidget(self.fileTabs, 0, 1, 9, 4)
         layout.addWidget(demoplot, 0, 5, 4, 4)
         layout.addWidget(nucplot, 4, 5, 4, 4)
         self.setLayout(layout)
 
-    def buttFunc(self, funcname):
-        print(funcname)
-
-    def runButtonFunc(self, button):
-        currentFile = fileTabs.currentWidget()
+    def runButtonFunc(self, btnFunc):
+        currentFile = self.fileTabs.currentWidget().filePath
+        currentFile = appctxt.get_resource(currentFile)
+        filename, filetype = currentFile.split('.')
+        print(f'called func: {btnFunc}')
+        print(f'filename: {filename}')
+        print(f'filetype: {filetype}')
+        record = viz.get_seq(currentFile)
         try:
-            record = viz.SeqIO.read(currentFile.filePath, currentFile.filePath.split('.')[-1])
-        except ValueError:
-            record = viz.SeqIO.parse(currentFile.filePath, currentFile.filePath.split('.')[-1])
-        except: raise
-        return record
+            result = VIZFUNCS[btnFunc](record)
+            fname = f"{btnFunc}{datetime.now().strftime('%Y%m%d_%H%M%S')}_plot.png"
+            fpath = os.path.join(self.PLOTDIR, fname)
+            result.savefig(fpath, transparent=True, bbox_inches='tight')
+            print(f'{fname} created')
+        except AttributeError:
+            print(f'record: {record}')
+            print(f'func called: {VIZFUNCS[btnFunc]}')
+
+    def nuc_dist(file):
+        viz.get_seq(self.fileTabs.currentWidget().filePath)
+        sequence = viz.get_seq(file)
+        nucplot = viz.nucleotide_distribution(sequence, normed=args.normed)
+        fname = f"{filename}_nucplot.png"
+        fpath = os.path.join(self.PLOTDIR, fname)
+        nucplot.savefig(fpath, transparent=True, bbox_inches='tight')
+        print('nucplot.png created')
+
 
 class MainWindow(QMainWindow):
     def __init__(self, mainWidget):
