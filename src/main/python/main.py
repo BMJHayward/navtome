@@ -138,13 +138,13 @@ class Grid(QWidget):
         buttonLayout.addStretch()
         # look into pyqtGraph for plotting at runtime
         demoplot = makePlotWindow('plot/demoplot.png')
-        nucplot = makePlotWindow('plot/nucplot.png')
+        self.nucplot = makePlotWindow('plot/nucplot.png')
         layout = QGridLayout()
 
         layout.addLayout(buttonLayout, 0, 0, 9, 1)
         layout.addWidget(self.fileTabs, 0, 1, 9, 4)
         layout.addWidget(demoplot, 0, 5, 4, 4)
-        layout.addWidget(nucplot, 4, 5, 4, 4)
+        layout.addWidget(self.nucplot, 4, 5, 4, 4)
         self.setLayout(layout)
 
     def runButtonFunc(self, btnFunc):
@@ -161,18 +161,11 @@ class Grid(QWidget):
             fpath = os.path.join(self.PLOTDIR, fname)
             result.savefig(fpath, transparent=True, bbox_inches='tight')
             print(f'{fname} created')
+            newPlot = appctxt.get_resource(fpath)
+            self.nucplot.setPixmap(newPlot)
         except AttributeError:
             print(f'record: {record}')
             print(f'func called: {VIZFUNCS[btnFunc]}')
-
-    def nuc_dist(file):
-        viz.get_seq(self.fileTabs.currentWidget().filePath)
-        sequence = viz.get_seq(file)
-        nucplot = viz.nucleotide_distribution(sequence, normed=args.normed)
-        fname = f"{filename}_nucplot.png"
-        fpath = os.path.join(self.PLOTDIR, fname)
-        nucplot.savefig(fpath, transparent=True, bbox_inches='tight')
-        print('nucplot.png created')
 
 
 class MainWindow(QMainWindow):

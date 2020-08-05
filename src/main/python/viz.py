@@ -220,7 +220,10 @@ def get_peptide_toplot(sequence):
         raise TypeError('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'.format(type(sequence)))
 
 def peptide_distribution(sequence, **kwargs):
-    plt.hist(get_peptide_toplot(sequence))
+    pepCount = Counter(get_peptide_toplot(sequence)).most_common(20)
+    lab, val = zip(*pepCount)
+    plt.bar(lab, val)
+    plt.xticks(rotation=90)
     return plt
 
 def plot_ABI(abifilename):
@@ -344,13 +347,13 @@ def main(args):
             abiplot.savefig(fpath, transparent=True, bbox_inches='tight')
             print('abiplot.png created')
         if args.nucleotide_distribution:
-            nucplot = nucleotide_distribution(sequence, normed=args.normed)
+            nucplot = nucleotide_distribution(sequence)
             fname = f"{filename}_nucplot.png"
             fpath = os.path.join(PLOTDIR, fname)
             nucplot.savefig(fpath, transparent=True, bbox_inches='tight')
             print('nucplot.png created')
         if args.peptide_distribution:
-            pepplot = peptide_distribution(sequence, normed=args.normed)
+            pepplot = peptide_distribution(sequence)
             fname = f"{filename}_pepplot.png"
             fpath = os.path.join(PLOTDIR, fname)
             pepplot.savefig(fpath, transparent=True, bbox_inches='tight')
