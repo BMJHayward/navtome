@@ -15,14 +15,7 @@ import viz
 from fbs_runtime.application_context.PySide2 import ApplicationContext as AppCtx
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import (Qt, QUrl, Signal, Slot, QTimer, QObject)
-from PySide2.QtGui import (
-        QColor,
-        QFont,
-        QIcon,
-        QPainter,
-        QPen,
-        QPixmap,
-        QTransform)
+from PySide2.QtGui import *
 from PySide2.QtMultimedia import QMediaContent, QMediaPlayer, QSound, QSoundEffect
 from PySide2.QtPrintSupport import *
 from PySide2.QtQml import QQmlApplicationEngine
@@ -107,6 +100,7 @@ class VizButtons(QWidget):
             if btn is self.btnGroup.button(id):
                 print(f'Button clicked: {id}')
 
+
 class FileTabs(QTabWidget):
     def __init__(self, *args, **kwargs):
         super(FileTabs, self).__init__(*args, **kwargs)
@@ -119,6 +113,23 @@ class FileTabs(QTabWidget):
         tab.filePath = appctxt.get_resource(demoFile)
         self.addTab(tab, demoName)
         self.addTab(QWidget(), 'add tab')
+        self.setMovable(True)
+        self.setTabsClosable(True)
+
+
+class PlotTabs(QTabWidget):
+    def __init__(self, *args, **kwargs):
+        super(PlotTabs, self).__init__(*args, **kwargs)
+        tab = QLabel()
+        self.addTab(QWidget(), 'add tab')
+        self.setMovable(True)
+        self.setTabsClosable(True)
+
+    def makePlotWindow(self, pic):
+            image = QLabel()
+            pic = QPixmap(appctxt.get_resource(pic))
+            image.setPixmap(pic)
+            return image
 
 
 class Grid(QWidget):
@@ -128,6 +139,8 @@ class Grid(QWidget):
         print(f'PLOTDIR: {self.PLOTDIR}')
         # make the widgets
         self.fileTabs = FileTabs()
+        self.topPlotTabs = PlotTabs()
+        self.botPlotTabs = PlotTabs()
         vizbuttons = VizButtons()
         buttonLayout = QVBoxLayout()
         # for btn in vizbuttons.btnGroup.buttons():
@@ -137,14 +150,18 @@ class Grid(QWidget):
             btn.clicked.connect(partial(self.runButtonFunc, btn.text()))
         buttonLayout.addStretch()
         # look into pyqtGraph for plotting at runtime
-        demoplot = makePlotWindow('plot/demoplot.png')
-        self.nucplot = makePlotWindow('plot/nucplot.png')
+        self.demoPlot = self.topPlotTabs.makePlotWindow('plot/demoplot.png')
+        self.nucplot = self.botPlotTabs.makePlotWindow('plot/nucplot.png')
+        self.topPlotTabs.insertTab(0, self.demoPlot, 'demoPlot')
+        self.botPlotTabs.insertTab(0, self.nucplot, 'nucPlot')
+        self.topPlotTabs.setCurrentIndex(0)
+        self.botPlotTabs.setCurrentIndex(0)
         layout = QGridLayout()
 
         layout.addLayout(buttonLayout, 0, 0, 9, 1)
         layout.addWidget(self.fileTabs, 0, 1, 9, 4)
-        layout.addWidget(demoplot, 0, 5, 4, 4)
-        layout.addWidget(self.nucplot, 4, 5, 4, 4)
+        layout.addWidget(self.topPlotTabs, 0, 5, 4, 4)
+        layout.addWidget(self.botPlotTabs, 4, 5, 4, 4)
         self.setLayout(layout)
 
     def runButtonFunc(self, btnFunc):
@@ -160,9 +177,11 @@ class Grid(QWidget):
             fname = f"{btnFunc}{datetime.now().strftime('%Y%m%d_%H%M%S')}_plot.png"
             fpath = os.path.join(self.PLOTDIR, fname)
             result.savefig(fpath, transparent=True, bbox_inches='tight')
+            result.clf()
             print(f'{fname} created')
             newPlot = appctxt.get_resource(fpath)
-            self.nucplot.setPixmap(newPlot)
+            self.botPlotTabs.insertTab(0, self.botPlotTabs.makePlotWindow(newPlot), fname.split('_')[0])
+            self.botPlotTabs.setCurrentIndex(0)
         except AttributeError:
             print(f'record: {record}')
             print(f'func called: {VIZFUNCS[btnFunc]}')
