@@ -242,12 +242,12 @@ def plot_ABI(abifilename):
     plt.plot(trace['DATA12'], color='yellow')
     return plt
 
-def plot_graphic_record(gbfile):
+def plot_graphic_record(recClass, gbfile):
     # plot graphic record from a genbank file
-    record = BiopythonTranslator().translate_record(gbfile, record_class='circular')
+    record = BiopythonTranslator().translate_record(gbfile, record_class=recClass)
     ax, _ = record.plot()
     ax.figure.tight_layout()
-    return ax
+    return ax.figure
 
 def get_abi(abifile):
     return SeqIO.read(abifile, 'abi').seq

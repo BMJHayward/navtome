@@ -24,22 +24,12 @@ from PySide2.QtWidgets import *
 DEV = False
 EXPIRY_DATE = '9999-12-31'
 HELP_STRING = 'INSERT INSTRUCTIONS HERE'
-BTNFUNCS = {
-    'fn1': lambda _: print('fn1'),
-    'fn2': lambda _: print('fn2'),
-    'fn3': lambda _: print('fn3'),
-    'fn4': lambda _: print('fn4'),
-    'fn5': lambda _: print('fn5'),
-    'fn6': lambda _: print('fn6'),
-    'fn7': lambda _: print('fn7'),
-    'fn8': lambda _: print('fn8'),
-    }
 
 VIZFUNCS = {
     'nucdist': viz.nucleotide_distribution,
     'pepdist': viz.peptide_distribution,
-    'grecord': viz.plot_graphic_record,
-    'fn4': lambda _: print(_),
+    'linerec': partial(viz.plot_graphic_record, 'linear'),
+    'circrec': partial(viz.plot_graphic_record, 'circular'),
     'fn5': lambda _: print(_),
     'fn6': lambda _: print(_),
     'fn7': lambda _: print(_),
@@ -97,7 +87,6 @@ class VizButtons(QWidget):
         for btn in self.btnGroup.buttons():
             btn.setIcon(QIcon(QPixmap(appctxt.get_resource('icon/64.png'))))
             btn.setFixedSize(96, 96)
-            # btn.clicked.connect(BTNFUNCS[btnFunc])
 
     def onClick(self, id):
         for btn in self.btnGroup.buttons():
@@ -178,6 +167,7 @@ class Grid(QWidget):
         record = viz.get_seq(currentFile)
         try:
             result = VIZFUNCS[btnFunc](currentFile)
+            if type(result) == None: return
             fname = f"{btnFunc}{datetime.now().strftime('%Y%m%d_%H%M%S')}_plot.png"
             fpath = os.path.join(self.PLOTDIR, fname)
             result.savefig(fpath, transparent=True, bbox_inches='tight')
@@ -222,7 +212,8 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if DEV: event.accept()
 
-        if True:  # PLACEHOLDER: add confirmation/cleanup dialogue here
+        # TODO: add confirmation/cleanup dialogue here
+        if True:
             event.accept()
         else:
             event.ignore()
