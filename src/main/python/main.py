@@ -38,13 +38,17 @@ BTNFUNCS = {
 VIZFUNCS = {
     'nucdist': viz.nucleotide_distribution,
     'pepdist': viz.peptide_distribution,
-    'fn3': lambda _: print(_),
+    'grecord': viz.plot_graphic_record,
     'fn4': lambda _: print(_),
     'fn5': lambda _: print(_),
     'fn6': lambda _: print(_),
     'fn7': lambda _: print(_),
     'fn8': lambda _: print(_),
     }
+
+
+def get_result(fs_file, func):
+    pass
 
 def makePlotWindow(pic):
         image = QLabel()
@@ -173,7 +177,7 @@ class Grid(QWidget):
         print(f'filetype: {filetype}')
         record = viz.get_seq(currentFile)
         try:
-            result = VIZFUNCS[btnFunc](record)
+            result = VIZFUNCS[btnFunc](currentFile)
             fname = f"{btnFunc}{datetime.now().strftime('%Y%m%d_%H%M%S')}_plot.png"
             fpath = os.path.join(self.PLOTDIR, fname)
             result.savefig(fpath, transparent=True, bbox_inches='tight')
@@ -182,9 +186,10 @@ class Grid(QWidget):
             newPlot = appctxt.get_resource(fpath)
             self.botPlotTabs.insertTab(0, self.botPlotTabs.makePlotWindow(newPlot), fname.split('_')[0])
             self.botPlotTabs.setCurrentIndex(0)
-        except AttributeError:
+        except AttributeError as e:
             print(f'record: {record}')
             print(f'func called: {VIZFUNCS[btnFunc]}')
+            print(e)
 
 
 class MainWindow(QMainWindow):

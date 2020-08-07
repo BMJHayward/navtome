@@ -195,11 +195,12 @@ def make_trigrams(sequence):
           ('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'
           .format(type(sequence))))
 
-def nucleotide_distribution(sequence, **kwargs):
+def nucleotide_distribution(nucFile, **kwargs):
     '''
     return plot object of 20 most common trigrams
     call `plt.show()` or `plt.savefig()` to use it
     '''
+    sequence = get_seq(nucFile)
     gramCount = Counter(make_trigrams(sequence)).most_common(20)
     lab, val = zip(*gramCount)
     plt.bar(lab, val)
@@ -219,7 +220,8 @@ def get_peptide_toplot(sequence):
     else:
         raise TypeError('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'.format(type(sequence)))
 
-def peptide_distribution(sequence, **kwargs):
+def peptide_distribution(pepFile, **kwargs):
+    sequence = get_seq(pepFile)
     pepCount = Counter(get_peptide_toplot(sequence)).most_common(20)
     lab, val = zip(*pepCount)
     plt.bar(lab, val)
@@ -239,6 +241,13 @@ def plot_ABI(abifilename):
     plt.plot(trace['DATA11'], color='green')
     plt.plot(trace['DATA12'], color='yellow')
     return plt
+
+def plot_graphic_record(gbfile):
+    # plot graphic record from a genbank file
+    record = BiopythonTranslator().translate_record(gbfile, record_class='circular')
+    ax, _ = record.plot()
+    ax.figure.tight_layout()
+    return ax
 
 def get_abi(abifile):
     return SeqIO.read(abifile, 'abi').seq
@@ -347,13 +356,13 @@ def main(args):
             abiplot.savefig(fpath, transparent=True, bbox_inches='tight')
             print('abiplot.png created')
         if args.nucleotide_distribution:
-            nucplot = nucleotide_distribution(sequence)
+            nucplot = nucleotide_distribution(filename)
             fname = f"{filename}_nucplot.png"
             fpath = os.path.join(PLOTDIR, fname)
             nucplot.savefig(fpath, transparent=True, bbox_inches='tight')
             print('nucplot.png created')
         if args.peptide_distribution:
-            pepplot = peptide_distribution(sequence)
+            pepplot = peptide_distribution(filename)
             fname = f"{filename}_pepplot.png"
             fpath = os.path.join(PLOTDIR, fname)
             pepplot.savefig(fpath, transparent=True, bbox_inches='tight')
