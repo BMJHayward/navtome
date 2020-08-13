@@ -46,6 +46,7 @@ def makePlotWindow(pic):
         image.setPixmap(pic)
         return image
 
+
 class QHLine(QFrame):
     def __init__(self):
         super(QHLine, self).__init__()
@@ -110,6 +111,25 @@ class FileTabs(QTabWidget):
         self.setTabsClosable(True)
 
 
+class PlotView(QGraphicsView):
+    def __init__(self, pic):
+        super(PlotView, self).__init__()
+        '''
+        1 create a view
+        2 create a scene
+        3 add scene to view
+        4 create QGrapicsPixmap with plot
+        5 add it to view with .addItem()
+        '''
+        self._scene = QGraphicsScene(self)
+        self.pic = QPixmap(appctxt.get_resource(pic))
+        self.picItem = QGraphicsPixmapItem(self.pic)
+        self._scene.addItem(self.picItem)
+        self.setScene(self._scene)
+        self.setSceneRect(0, 0, 1000, 1000)
+        self.setFixedSize(500, 500)
+
+
 class PlotTabs(QTabWidget):
     def __init__(self, *args, **kwargs):
         super(PlotTabs, self).__init__(*args, **kwargs)
@@ -143,9 +163,11 @@ class Grid(QWidget):
             btn.clicked.connect(partial(self.runButtonFunc, btn.text()))
         buttonLayout.addStretch()
         # look into pyqtGraph for plotting at runtime
-        self.demoPlot = self.topPlotTabs.makePlotWindow('plot/demoplot.png')
-        self.nucplot = self.botPlotTabs.makePlotWindow('plot/nucplot.png')
-        self.topPlotTabs.insertTab(0, self.demoPlot, 'demoPlot')
+        # self.demoplot = self.topPlotTabs.makePlotWindow('plot/demoplot.png')
+        # self.nucplot = self.botPlotTabs.makePlotWindow('plot/nucplot.png')
+        self.demoplot = PlotView('plot/demoplot.png')
+        self.nucplot = PlotView('plot/nucplot.png')
+        self.topPlotTabs.insertTab(0, self.demoplot, 'demoplot')
         self.botPlotTabs.insertTab(0, self.nucplot, 'nucPlot')
         self.topPlotTabs.setCurrentIndex(0)
         self.botPlotTabs.setCurrentIndex(0)
@@ -174,7 +196,7 @@ class Grid(QWidget):
             result.clf()
             print(f'{fname} created')
             newPlot = appctxt.get_resource(fpath)
-            self.botPlotTabs.insertTab(0, self.botPlotTabs.makePlotWindow(newPlot), fname.split('_')[0])
+            self.botPlotTabs.insertTab(0, PlotView(newPlot), fname.split('_')[0])
             self.botPlotTabs.setCurrentIndex(0)
         except AttributeError as e:
             print(f'record: {record}')
@@ -208,6 +230,7 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.exit_app)
         self.file_menu.addAction(exit_action)
         self.setCentralWidget(mainWidget)
+        # self.setWindowState(Qt.WindowMaximized)
 
     def closeEvent(self, event):
         if DEV: event.accept()
