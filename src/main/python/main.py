@@ -126,8 +126,9 @@ class PlotView(QGraphicsView):
         self.picItem = QGraphicsPixmapItem(self.pic)
         self._scene.addItem(self.picItem)
         self.setScene(self._scene)
-        self.setSceneRect(0, 0, 1000, 1000)
-        self.setFixedSize(500, 500)
+        # self.setSceneRect(0, 0, 1000, 1000)
+        self.setDragMode(QGraphicsView.ScrollHandDrag)
+        # self.setFixedSize(500, 500)
 
 
 class PlotTabs(QTabWidget):
@@ -171,12 +172,21 @@ class Grid(QWidget):
         self.botPlotTabs.insertTab(0, self.nucplot, 'nucPlot')
         self.topPlotTabs.setCurrentIndex(0)
         self.botPlotTabs.setCurrentIndex(0)
+        vertSplit = QSplitter(self)
+        horiSplit = QSplitter(vertSplit)
+        horiSplit.setOrientation(Qt.Vertical)
+        horiSplit.addWidget(self.topPlotTabs)
+        horiSplit.addWidget(self.botPlotTabs)
+        vertSplit.addWidget(self.fileTabs)
+        vertSplit.addWidget(horiSplit)
         layout = QGridLayout()
-
         layout.addLayout(buttonLayout, 0, 0, 9, 1)
+        '''
         layout.addWidget(self.fileTabs, 0, 1, 9, 4)
         layout.addWidget(self.topPlotTabs, 0, 5, 4, 4)
         layout.addWidget(self.botPlotTabs, 4, 5, 4, 4)
+        '''
+        layout.addWidget(vertSplit, 0, 1, 9, 4)
         self.setLayout(layout)
 
     def runButtonFunc(self, btnFunc):
