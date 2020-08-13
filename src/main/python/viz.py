@@ -183,13 +183,13 @@ def ngrams(sequence, n):
     count = max(0, len(sequence) - n + 1)
     return [tuple(sequence[i:i+n]) for i in range(count)]
 
-def make_trigrams(sequence):
+def make_ngrams(n, sequence):
     if type(sequence)==SeqRecord.SeqRecord:
-        return [''.join([t for t in tup]) for tup in ngrams(str(sequence.seq),3)]
+        return [''.join([t for t in tup]) for tup in ngrams(str(sequence.seq),n)]
     elif type(sequence)==Seq.Seq:
-        return [''.join([t for t in tup]) for tup in ngrams(str(sequence),3)]
+        return [''.join([t for t in tup]) for tup in ngrams(str(sequence),n)]
     elif type(sequence)==str:
-        return [''.join([t for t in tup]) for tup in ngrams(sequence,3)]
+        return [''.join([t for t in tup]) for tup in ngrams(sequence,n)]
     else:
         raise TypeError(
           ('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'
@@ -201,7 +201,7 @@ def nucleotide_distribution(nucFile, **kwargs):
     call `plt.show()` or `plt.savefig()` to use it
     '''
     sequence = get_seq(nucFile)
-    gramCount = Counter(make_trigrams(sequence)).most_common(20)
+    gramCount = Counter(make_ngrams(n, sequence)).most_common(20)
     lab, val = zip(*gramCount)
     plt.bar(lab, val)
     plt.xticks(rotation=90)
@@ -356,7 +356,7 @@ def main(args):
             abiplot.savefig(fpath, transparent=True, bbox_inches='tight')
             print('abiplot.png created')
         if args.nucleotide_distribution:
-            nucplot = nucleotide_distribution(filename)
+            nucplot = nucleotide_distribution(3, filename)
             fname = f"{filename}_nucplot.png"
             fpath = os.path.join(PLOTDIR, fname)
             nucplot.savefig(fpath, transparent=True, bbox_inches='tight')

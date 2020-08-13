@@ -26,7 +26,7 @@ EXPIRY_DATE = '9999-12-31'
 HELP_STRING = 'INSERT INSTRUCTIONS HERE'
 
 VIZFUNCS = {
-    'nucdist': viz.nucleotide_distribution,
+    'nucdist': partial(viz.nucleotide_distribution, 3),
     'pepdist': viz.peptide_distribution,
     'linerec': partial(viz.plot_graphic_record, 'linear'),
     'circrec': partial(viz.plot_graphic_record, 'circular'),
