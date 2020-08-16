@@ -25,17 +25,19 @@ DEV = False
 EXPIRY_DATE = '9999-12-31'
 HELP_STRING = 'INSERT INSTRUCTIONS HERE'
 
-VIZFUNCS = {
-    'nucdist': partial(viz.nucleotide_distribution, 3),
-    'pepdist': viz.peptide_distribution,
-    'linerec': partial(viz.plot_graphic_record, 'linear'),
-    'circrec': partial(viz.plot_graphic_record, 'circular'),
-    'fn5': lambda _: print(_),
-    'fn6': lambda _: print(_),
-    'fn7': lambda _: print(_),
-    'fn8': lambda _: print(_),
-    }
+def nucNdist():
+    pass
 
+def pepNdist():
+    pass
+
+def getFormData(func, file):
+    quid = QInputDialog()
+    input, ok = quid.getInt(quid, 'Title', 'Enter number > 0', 1, 1, 100, 1)
+    if ok:
+        return func(input, file)
+    else:
+        return 1
 
 def get_result(fs_file, func):
     pass
@@ -45,6 +47,17 @@ def makePlotWindow(pic):
         pic = QPixmap(appctxt.get_resource(pic))
         image.setPixmap(pic)
         return image
+
+VIZFUNCS = {
+    'nucdist': partial(viz.nucleotide_distribution, 3),
+    'pepdist': partial(viz.peptide_distribution, 1),
+    'linerec': partial(viz.plot_graphic_record, 'linear'),
+    'circrec': partial(viz.plot_graphic_record, 'circular'),
+    'nucNdist': partial(getFormData, viz.nucleotide_distribution),
+    'pepNdist': partial(getFormData, viz.peptide_distribution),
+    'fn7': lambda _: print(_),
+    'fn8': lambda _: print(_),
+    }
 
 
 class QHLine(QFrame):
@@ -93,6 +106,41 @@ class VizButtons(QWidget):
         for btn in self.btnGroup.buttons():
             if btn is self.btnGroup.button(id):
                 print(f'Button clicked: {id}')
+
+
+class InputForm(QInputDialog):
+    def __init__(self, inputType=int, parent=None):
+        super(InputForm, self).__init__(parent)
+        # Create widgets
+        class NucSet(set):
+            ab = 'acgit'
+        class PepSet(set):
+            ab = 'acdefghiklmnpqrstvwybxzjuo'
+
+        typeMessages = {
+                int: 'please enter a whole number greater than 0',
+                str: 'please enter any combination of alphanumeric characters',
+                NucSet: f'please enter any combination of {NucSet.ab}',
+                PepSet: f'please enter any combination of {PepSet.ab}'
+                }
+
+        self.message = QTextLabel(typeMessages[inputType])
+        self.edit = QLineEdit('Input here')
+        self.okbutton = QPushButton('Ok')
+        self.cancelbutton = QPushButton('Cancel')
+        # Create layout and add widgets
+        layout = QVBoxLayout()
+        layout.addWidget(self.message)
+        layout.addWidget(self.edit)
+        layout.addWidget(self.okbutton)
+        layout.addWidget(self.cancelbutton)
+        # Set dialog layout
+        self.setLayout(layout)
+        # Add button signal to greetings slot
+        self.button.clicked.connect(self.greetings)
+    @Signal
+    def sendInput(self):
+        print(f'Sent: {self.edit.text()}')
 
 
 class FileTabs(QTabWidget):
