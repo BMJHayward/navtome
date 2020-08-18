@@ -7,9 +7,11 @@ from dna_features_viewer import BiopythonTranslator, CircularGraphicRecord, Grap
 from itertools import chain, product
 from matplotlib import pyplot as plt
 import multiprocessing as mp
+import numpy as np
 import os
 from pathlib import Path
 import sys
+from sklearn.feature_extraction.text import TfidfVectorizer
 import textdistance as TD
 from typing import Iterable, List
 
@@ -57,6 +59,37 @@ textdistfuncs = [
     'tversky',
     'zlib_ncd',
 ]
+
+def lev_distance(str1, str2):
+    # calculates levenshtein similarity between 2 strings
+    xlen, ylen = len(str1) + 1, len(str2) + 1
+    distmatrix = np.zeros((xlen, ylen))
+    for x in range(xlen): distmatrix[x,0] = x
+    for y in range(ylen): distmatrix[0,y] = y
+    for x in range(1, xlen):
+        for y in range(1, ylen):
+            if str1[x-1] == str2[y-1]:
+                distmatrix[x,y] = min(
+                    distmatrix[x-1,y] + 1,
+                    distmatrix[x-1,y-1],
+                    distmatrix[x,y-1] + 1)
+            else:
+                distmatrix[x,y] = min(
+                    distmatrix[x-1,y] + 1,
+                    distmatrix[x-1,y-1] + 1,
+                    distmatrix[x,y-1] + 1)
+    return distmatrix[xlen-1, ylen-1]
+
+def lev_ratio(str1, str2):
+    # calculates levenshtein distance as a ratio of the maximum edit distance
+    upper_bound = max(len(str1), len(str2))
+    return 1 - lev_distance(str1, str2) / upper_bound
+
+def tfidf_cosine_distance(str1, str2):
+    # returns a float, a higher number is closer/better result
+    vectors = TfidfVectorizer(min_df=1)
+    tfidf = vectors.fit_transform([str1, str2])
+    return (tfidf*tfidf.T).A[0,1]
 
 def create_distance_matrix(pdbfile, quiet=False):
     derp = PDB.PDBParser(QUIET=quiet).get_structure('pdbfile', pdbfile)
