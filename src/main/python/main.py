@@ -25,22 +25,24 @@ DEV = False
 EXPIRY_DATE = '9999-12-31'
 HELP_STRING = 'INSERT INSTRUCTIONS HERE'
 
-def nucNdist():
-    pass
-
-def pepNdist():
-    pass
-
-def getFormData(func, file):
+def getNumber(func, file):
     quid = QInputDialog()
-    input, ok = quid.getInt(quid, 'Title', 'Enter number > 0', 1, 1, 100, 1)
+    input, ok = quid.getInt(quid, 'How many?', 'Enter number > 0', 1, 1, 100, 1)
     if ok:
         return func(input, file)
     else:
         return 1
 
-def get_result(fs_file, func):
-    pass
+def getStringDist(func, file):
+    quid = QInputDialog()
+    input, ok = quid.getText(quid, 'Enter nuc/pep', 'type or paste your sequence here')
+    if ok and input:
+        return viz.calcDist(func, input, file)
+    else:
+        return 'NOT OK'
+
+def funcHolder(func1, func2, *args):
+    return func1(func2, *args)
 
 def makePlotWindow(pic):
         image = QLabel()
@@ -51,12 +53,12 @@ def makePlotWindow(pic):
 VIZFUNCS = {
     'nucdist': partial(viz.nucleotide_distribution, 3),
     'pepdist': partial(viz.peptide_distribution, 1),
+    'nucNdist': partial(getNumber, viz.nucleotide_distribution),
+    'pepNdist': partial(getNumber, viz.peptide_distribution),
     'linerec': partial(viz.plot_graphic_record, 'linear'),
     'circrec': partial(viz.plot_graphic_record, 'circular'),
-    'nucNdist': partial(getFormData, viz.nucleotide_distribution),
-    'pepNdist': partial(getFormData, viz.peptide_distribution),
-    'fn7': lambda _: print(_),
-    'fn8': lambda _: print(_),
+    'levratdist': partial(getStringDist, viz.lev_ratio),
+    'cosinedist': partial(getStringDist, viz.tfidf_cosine_distance),
     }
 
 
@@ -244,7 +246,6 @@ class Grid(QWidget):
         print(f'called func: {btnFunc}')
         print(f'filename: {filename}')
         print(f'filetype: {filetype}')
-        record = viz.get_seq(currentFile)
         try:
             result = VIZFUNCS[btnFunc](currentFile)
             if type(result) == None: return
@@ -257,6 +258,7 @@ class Grid(QWidget):
             self.botPlotTabs.insertTab(0, PlotView(newPlot), fname.split('_')[0])
             self.botPlotTabs.setCurrentIndex(0)
         except AttributeError as e:
+            record = viz.get_seq(currentFile)
             print(f'record: {record}')
             print(f'func called: {VIZFUNCS[btnFunc]}')
             print(e)

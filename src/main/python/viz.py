@@ -240,6 +240,12 @@ def make_ngrams(n, sequence):
           ('sequence was type: {}, need Biopython.SeqRecord, Biopython.Seq.Seq, or str type'
           .format(type(sequence))))
 
+def calcDist(distFunc, inputSeq, seqFile):
+    record = get_seq(seqFile)
+    seqgrams = ngrams(str(record).lower(), len(inputSeq))
+    seqgrams = (''.join(seq) for seq in seqgrams)
+    return {gram: distFunc(gram, inputSeq) for gram in seqgrams}
+
 def nucleotide_distribution(n, nucFile, **kwargs):
     '''
     return plot object of 20 most common trigrams
