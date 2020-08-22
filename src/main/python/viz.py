@@ -279,12 +279,29 @@ def heatMap(heatMatrix, xLab, yLab):
     fig.tight_layout()
     return plt
 
-def seqSimPlot(segN, seqFile):
+
+def nucSimPlot(segN, seqFile):
     '''
     create similarity heatmap for a sequence of length segN
     '''
     limit = 10
     sequence = get_seq(seqFile)
+    ngrams = make_ngrams(segN, sequence)
+    if len(ngrams) > limit:
+        print(f'running locally, cutting ngrams to {limit}')
+        print(f'length: {len(ngrams)}')
+        ngrams = ngrams[:limit]
+        print(f'current ngrams: {ngrams}')
+    heatMat =  heatMatrix(ngrams, lev_distance)
+    print(f'HEATMATRIX:\n{heatMat}')
+    return heatMap(heatMat, ngrams, ngrams)
+
+def pepSimPlot(segN, seqFile):
+    '''
+    create similarity heatmap for a sequence of length segN
+    '''
+    limit = 10
+    sequence = get_peptide_toplot(get_seq(seqFile))
     ngrams = make_ngrams(segN, sequence)
     if len(ngrams) > limit:
         print(f'running locally, cutting ngrams to {limit}')
