@@ -10,12 +10,14 @@ import multiprocessing as mp
 import numpy as np
 import os
 from pathlib import Path
-import sys
+import seaborn as sns
 from sklearn.feature_extraction.text import TfidfVectorizer
+import sys
 import textdistance as TD
 from typing import Iterable, List
 
 plt.style.use('ggplot')
+sns.set()
 
 PLOTDIR = 'plots'
 if not os.path.exists(PLOTDIR):
@@ -245,6 +247,53 @@ def calcDist(distFunc, inputSeq, seqFile):
     seqgrams = ngrams(str(record).lower(), len(inputSeq))
     seqgrams = (''.join(seq) for seq in seqgrams)
     return {gram: distFunc(gram, inputSeq) for gram in seqgrams}
+
+def heatMatrix(dgrams, distFunc):
+    '''
+    add your ngrams, get back a heatmap
+    TODO:
+    this should probably be run in its own process
+    python native matrix may be a bit slow too
+    '''
+    matrix = np.array([[0 for j in dgrams] for i in dgrams])
+    for i in range(len(dgrams)):
+        for j in range(len(dgrams)):
+            matrix[i][j] = distFunc(dgrams[i],dgrams[j])
+    return matrix
+
+def heatMap(heatMatrix, xLab, yLab):
+    fig, ax = plt.subplots()
+    ax = sns.heatmap(heatMatrix, annot=True, xticklabels=xLab, yticklabels=yLab)
+    #im = ax.imshow(heatMatrix)
+    '''
+    for i in range(len(xLab)):
+        for j in range(len(yLab)):
+            tx = ax.text(i, j, heatMatrix[i][j], ha='center', va='center', color='w')
+
+    ax.set_xticks(range(len(xLab)))
+    ax.set_yticks(range(len(yLab)))
+    ax.set_xticklabels(xLab)
+    ax.set_yticklabels(yLab)
+    plt.setp(ax.get_xticklabels(), rotation=90, ha='right', rotation_mode='anchor')
+    '''
+    fig.tight_layout()
+    return plt
+
+def seqSimPlot(segN, seqFile):
+    '''
+    create similarity heatmap for a sequence of length segN
+    '''
+    limit = 10
+    sequence = get_seq(seqFile)
+    ngrams = make_ngrams(segN, sequence)
+    if len(ngrams) > limit:
+        print(f'running locally, cutting ngrams to {limit}')
+        print(f'length: {len(ngrams)}')
+        ngrams = ngrams[:limit]
+        print(f'current ngrams: {ngrams}')
+    heatMat =  heatMatrix(ngrams, lev_distance)
+    print(f'HEATMATRIX:\n{heatMat}')
+    return heatMap(heatMat, ngrams, ngrams)
 
 def nucleotide_distribution(n, nucFile, **kwargs):
     '''

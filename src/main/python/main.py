@@ -57,8 +57,8 @@ VIZFUNCS = {
     'pepNdist': partial(getNumber, viz.peptide_distribution),
     'linerec': partial(viz.plot_graphic_record, 'linear'),
     'circrec': partial(viz.plot_graphic_record, 'circular'),
-    'levratdist': partial(getStringDist, viz.lev_ratio),
-    'cosinedist': partial(getStringDist, viz.tfidf_cosine_distance),
+    'nucHeatMap': partial(getNumber, viz.seqSimPlot),
+    'pepHeatMap': partial(getNumber, viz.seqSimPlot),
     }
 
 
