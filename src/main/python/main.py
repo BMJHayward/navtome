@@ -148,6 +148,7 @@ class InputForm(QInputDialog):
 class FileTabs(QTabWidget):
     def __init__(self, *args, **kwargs):
         super(FileTabs, self).__init__(*args, **kwargs)
+        # tb = self.tabBar()
         tab = QTextEdit()
         demoFile = 'data/NC_005816.gb'
         demoText = open(appctxt.get_resource(demoFile), 'r').read()
@@ -156,9 +157,27 @@ class FileTabs(QTabWidget):
         tab.setText(demoText)
         tab.filePath = appctxt.get_resource(demoFile)
         self.addTab(tab, demoName)
-        self.addTab(QWidget(), 'add tab')
+        self.addTab(QWidget(), 'New tab')
         self.setMovable(True)
         self.setTabsClosable(True)
+        self.currentChanged.connect(self.insertNewFile)
+        # tab.onclick.connect(self.insertNewFile)
+
+    def insertNewFile(self):
+        print(f'currentIndex: {self.currentIndex()}')
+        print(f'count: {self.count()}')
+        if self.currentIndex() == self.count() - 1:
+            newFile = QFileDialog.getOpenFileName(parent=self, caption='Open file', dir='.')[0]
+            print(f'newFile: {newFile}')
+            newName = newFile.split('/')[-1]
+            newText = open(appctxt.get_resource(newFile), 'r').read()
+            newTab = QTextEdit()
+            newTab.setDocumentTitle('newName')
+            newTab.setText(newText)
+            newTab.filePath = appctxt.get_resource(newFile)
+            self.insertTab(0, newTab, newName)
+            self.setCurrentIndex(0)
+        else: pass
 
 
 class PlotView(QGraphicsView):
