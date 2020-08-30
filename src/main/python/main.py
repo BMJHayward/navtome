@@ -157,16 +157,19 @@ class FileTabs(QTabWidget):
         tab.setText(demoText)
         tab.filePath = appctxt.get_resource(demoFile)
         self.addTab(tab, demoName)
-        self.addTab(QWidget(), 'New tab')
-        self.setMovable(True)
+        newTabBtn = QTextEdit()
+        newTabBtn.setDocumentTitle('New tab')
+        self.addTab(newTabBtn, 'New tab')
+        # self.setMovable(True)
+        self.setMovable(False)
         self.setTabsClosable(True)
         self.currentChanged.connect(self.insertNewFile)
-        # tab.onclick.connect(self.insertNewFile)
 
     def insertNewFile(self):
         print(f'currentIndex: {self.currentIndex()}')
         print(f'count: {self.count()}')
-        if self.currentIndex() == self.count() - 1:
+        curIdx = self.currentIndex()
+        if curIdx == self.count() - 1:
             newFile = QFileDialog.getOpenFileName(parent=self, caption='Open file', dir='.')[0]
             print(f'newFile: {newFile}')
             newName = newFile.split('/')[-1]
@@ -293,6 +296,31 @@ class MainWindow(QMainWindow):
         self.view_menu = self.menu.addMenu('View')
         self.help_menu = self.menu.addMenu('Help')
 
+        def openFile():
+            grid = self.centralWidget()
+            tabCount = grid.fileTabs.count()
+            grid.fileTabs.setCurrentIndex(tabCount - 1)
+            grid.fileTabs.insertNewFile()
+
+        def openPlot():
+            self.centralWidget().plotTabs
+            newPlot = appctxt.get_resource(fpath)
+            self.botPlotTabs.insertTab(0, PlotView(newPlot), fname.split('_')[0])
+            self.botPlotTabs.setCurrentIndex(0)
+
+        def openPlotDir():
+            import os
+            import platform
+            import subprocess
+            def open_file(path):
+                if platform.system() == "Windows":
+                    os.startfile(path)
+                elif platform.system() == "Darwin":
+                    subprocess.Popen(["open", path])
+                else:
+                    subprocess.Popen(["xdg-open", path])
+            open_file(appctxt.get_resource('plot'))
+
         def showHelp():
             helpBox = QMessageBox()
             helpBox.setText(HELP_STRING)
@@ -300,6 +328,17 @@ class MainWindow(QMainWindow):
             helpBox.setDefaultButton(helpButton)
             helpBox.exec_()
 
+        # actions
+        file_action = QAction('Open file', self)
+        file_action.setStatusTip('Open a new sequence file')
+        file_action.triggered.connect(openFile)
+        file_action.setShortcut('Ctrl+O')
+        self.file_menu.addAction(file_action)
+        plotdir_action = QAction('Open plot folder', self)
+        plotdir_action.setStatusTip('Open folder containing all your plots')
+        plotdir_action.triggered.connect(openPlotDir)
+        plotdir_action.setShortcut('Ctrl+Shift+P')
+        self.file_menu.addAction(plotdir_action)
         help_action = QAction('How to use this program', self)
         help_action.setStatusTip('How to use this program')
         help_action.triggered.connect(showHelp)
