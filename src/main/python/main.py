@@ -160,12 +160,11 @@ class FileTabs(QTabWidget):
         newTabBtn = QTextEdit()
         newTabBtn.setDocumentTitle('New tab')
         self.addTab(newTabBtn, 'New tab')
-        # self.setMovable(True)
         self.setMovable(False)
         self.setTabsClosable(True)
-        self.currentChanged.connect(self.insertNewFile)
+        self.currentChanged.connect(self.insertNew)
 
-    def insertNewFile(self):
+    def insertNew(self):
         print(f'currentIndex: {self.currentIndex()}')
         print(f'count: {self.count()}')
         curIdx = self.currentIndex()
@@ -198,11 +197,10 @@ class PlotView(QGraphicsView):
         self.picItem = QGraphicsPixmapItem(self.pic)
         self._scene.addItem(self.picItem)
         self.setScene(self._scene)
-        # self.setSceneRect(0, 0, 1000, 1000)
         self.setDragMode(QGraphicsView.ScrollHandDrag)
-        # self.setFixedSize(500, 500)
 
 
+# TODO: create parent class for PlotTabs and FileTabs
 class PlotTabs(QTabWidget):
     def __init__(self, *args, **kwargs):
         super(PlotTabs, self).__init__(*args, **kwargs)
@@ -210,12 +208,27 @@ class PlotTabs(QTabWidget):
         self.addTab(QWidget(), 'add tab')
         self.setMovable(True)
         self.setTabsClosable(True)
+        self.currentChanged.connect(self.insertNew)
 
     def makePlotWindow(self, pic):
             image = QLabel()
             pic = QPixmap(appctxt.get_resource(pic))
             image.setPixmap(pic)
             return image
+
+    def insertNew(self):
+        print(f'currentIndex: {self.currentIndex()}')
+        print(f'count: {self.count()}')
+        curIdx = self.currentIndex()
+        PLOTDIR = appctxt.get_resource('plot')
+        if curIdx == self.count() - 1:
+            newFile = QFileDialog.getOpenFileName(parent=self, caption='Open file', dir=PLOTDIR)[0]
+            print(f'newFile: {newFile}')
+            newName = newFile.split('/')[-1]
+            PlotView(newFile)
+            self.insertTab(0, PlotView(newFile), newName)
+            self.setCurrentIndex(0)
+        else: pass
 
 
 class Grid(QWidget):
@@ -229,15 +242,12 @@ class Grid(QWidget):
         self.botPlotTabs = PlotTabs()
         vizbuttons = VizButtons()
         buttonLayout = QVBoxLayout()
-        # for btn in vizbuttons.btnGroup.buttons():
         for btn, fname, func in zip(vizbuttons.btnGroup.buttons(), VIZFUNCS.keys(), VIZFUNCS.values()):
             buttonLayout.addWidget(btn)
             btn.setText(fname)
             btn.clicked.connect(partial(self.runButtonFunc, btn.text()))
         buttonLayout.addStretch()
         # look into pyqtGraph for plotting at runtime
-        # self.demoplot = self.topPlotTabs.makePlotWindow('plot/demoplot.png')
-        # self.nucplot = self.botPlotTabs.makePlotWindow('plot/nucplot.png')
         self.demoplot = PlotView('plot/demoplot.png')
         self.nucplot = PlotView('plot/nucplot.png')
         self.topPlotTabs.insertTab(0, self.demoplot, 'demoplot')
@@ -253,11 +263,6 @@ class Grid(QWidget):
         vertSplit.addWidget(horiSplit)
         layout = QGridLayout()
         layout.addLayout(buttonLayout, 0, 0, 9, 1)
-        '''
-        layout.addWidget(self.fileTabs, 0, 1, 9, 4)
-        layout.addWidget(self.topPlotTabs, 0, 5, 4, 4)
-        layout.addWidget(self.botPlotTabs, 4, 5, 4, 4)
-        '''
         layout.addWidget(vertSplit, 0, 1, 9, 4)
         self.setLayout(layout)
 
@@ -300,13 +305,14 @@ class MainWindow(QMainWindow):
             grid = self.centralWidget()
             tabCount = grid.fileTabs.count()
             grid.fileTabs.setCurrentIndex(tabCount - 1)
-            grid.fileTabs.insertNewFile()
+            grid.fileTabs.insertNew()
 
         def openPlot():
-            self.centralWidget().plotTabs
-            newPlot = appctxt.get_resource(fpath)
-            self.botPlotTabs.insertTab(0, PlotView(newPlot), fname.split('_')[0])
-            self.botPlotTabs.setCurrentIndex(0)
+            grid = self.centralWidget()
+            plotPath = appctxt.get_resource('plot')
+            newFile = QFileDialog.getOpenFileName(parent=self, caption='Open file', dir=plotPath)[0]
+            grid.botPlotTabs.insertTab(0, PlotView(newFile), newFile.split('_')[0])
+            grid.botPlotTabs.setCurrentIndex(0)
 
         def openPlotDir():
             import os
@@ -329,6 +335,11 @@ class MainWindow(QMainWindow):
             helpBox.exec_()
 
         # actions
+        plot_action = QAction('Open plot', self)
+        plot_action.setStatusTip('Open a previous plot')
+        plot_action.triggered.connect(openPlot)
+        plot_action.setShortcut('Ctrl+L')
+        self.file_menu.addAction(plot_action)
         file_action = QAction('Open file', self)
         file_action.setStatusTip('Open a new sequence file')
         file_action.triggered.connect(openFile)
