@@ -17,6 +17,6 @@ scikit-learn
 scipy
 seaborn
 textdistance
-pywin32==228
+pywin32==301
 pywin32-ctypes==0.2.0
 wincertstore==0.2
